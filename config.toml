@@ -1,6 +1,6 @@
-baseURL = "https://ewoodbury.com/"
+baseURL = "https://ewoodbury.github.io/ewoodbury.com/"
 title = "Ethan Woodbury"
-copyright = "Copyright © 2022, Ethan Woodbury"
+copyright = "Copyright © 2023, Ethan Woodbury"
 languageCode = "en-US"
 theme = "etch"
 
