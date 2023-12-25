@@ -2,7 +2,7 @@ baseURL = "https://ewoodbury.github.io/ewoodbury.com/"
 title = "Ethan Woodbury"
 copyright = "Copyright © 2023, Ethan Woodbury"
 languageCode = "en-US"
-theme = "etch"
+theme = ["etch", "hugo-shortcode-gallery"]
 
 [params]
   Author = "Ethan Woodbury"
@@ -14,3 +14,6 @@ theme = "etch"
   EmailAddress = "ethwoodbury@gmail.com"
   GitHubUser = "ewoodbury"
   TwitterUser = "etwoodbury"
+
+[imaging.exif]
+    includeFields = ".*"
