@@ -1,6 +1,6 @@
 baseURL = "https://ewoodbury.github.io/ewoodbury.com/"
 title = "Ethan Woodbury"
-copyright = "Copyright © 2023, Ethan Woodbury"
+copyright = "Copyright © 2024, Ethan Woodbury"
 languageCode = "en-US"
 theme = ["etch", "hugo-shortcode-gallery"]
 
@@ -17,3 +17,13 @@ theme = ["etch", "hugo-shortcode-gallery"]
 
 [imaging.exif]
     includeFields = ".*"
+
+[[menu.main]]
+name = "About"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Photos"
+url = "/photos"
+weight = 1

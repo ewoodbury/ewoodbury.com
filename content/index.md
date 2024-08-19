@@ -10,9 +10,11 @@ I previously studied Chemical Engineering at UC Berkeley. I live in the Bay Area
 
 {{< figure src="https://ewoodbury.github.io/ewoodbury.com/profile.jpg" >}}
 
-My technical interests include databases, backend systems, and data visualization. I enjoy thinking about how data tools can enable organizations to function more optimally.
+My technical interests include data platforms (particularly Spark), distributed systems, and data visualization. I enjoy thinking about how data tools can enable organizations to function more optimally.
 
 I'm also interested in global development, particularly how to most effectively lift out of poverty the [650 million people living on less than $2.15 per day](https://data.worldbank.org/indicator/SI.POV.DDAY).
+
+Away from the keyboard, I rotate through phases of road cycling, mountain biking, running, hiking/backpacking, and photography.
 
 ## Links
 
