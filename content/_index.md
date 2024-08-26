@@ -14,7 +14,7 @@ My technical interests include analytical data systems (particularly Spark and d
 
 I previously studied Chemical Engineering at UC Berkeley. My academic background is in materials research for high-capacity, nickel-rich battery cathodes.
 
-I'm also interested in global development, particularly how to most effectively lift out of poverty the [650 million people living on less than $2.15 per day](https://data.worldbank.org/indicator/SI.POV.DDAY). I'm also broadly interested in the [safety and alignment of AI systems](https://forum.effectivealtruism.org/posts/rJRw78oihoT5paFGd/high-level-hopes-for-ai-alignment).
+Outside of work, I'm interested in global development, particularly how to most effectively lift out of poverty the [650 million people living on less than $2.15 per day](https://data.worldbank.org/indicator/SI.POV.DDAY). I'm also broadly interested in the [safety and alignment of AI systems](https://forum.effectivealtruism.org/posts/rJRw78oihoT5paFGd/high-level-hopes-for-ai-alignment).
 
 Away from the keyboard, I enjoy road cycling, mountain biking, running, hiking/backpacking, and photography.
 
