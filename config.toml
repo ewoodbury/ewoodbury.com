@@ -9,6 +9,7 @@ theme = ["etch", "hugo-shortcode-gallery"]
   Description = "Ethan Woodbury's Website"
   dark = "off"
   highlight = true
+  mainSections = ["posts"]
 
   # Contact/social-network identifiers for social icons
   EmailAddress = "ethwoodbury@gmail.com"
@@ -19,11 +20,16 @@ theme = ["etch", "hugo-shortcode-gallery"]
     includeFields = ".*"
 
 [[menu.main]]
-name = "About"
+name = "Posts"
 url = "/"
 weight = 1
 
 [[menu.main]]
+name = "About"
+url = "/about"
+weight = 2
+
+[[menu.main]]
 name = "Photos"
 url = "/photos"
-weight = 1
+weight = 3
