@@ -6,13 +6,15 @@ I work on Tesla's Cell Manufacturing team, where I lead a team that builds softw
 
 I hope that my current work will pull forward the day when the world has access to cheap, abundant energy storage. 
 
-My technical interests include analytical data systems (particularly Spark and data lakes), data validation and verifiability, and data visualization. I enjoy thinking about how data tools can be effective in large organizations.
+My technical strengths include analytical data systems (particularly Spark and data lakes), data validation and verifiability, terabyte-scale data processing, and data visualization. I've spent a lot of time thinking about and building systems to make data *actually effective* in large organizations.
+
+More recently, I've been spending time going deep into functional programming, type systems, distributed systems, and testing theory. I've been working on a [project](https://github.com/ewoodbury/sparklet) to rebuild Spark core from scratch in functional Scala 3.
 
 {{< figure src="https://ewoodbury.com/profile.jpg" >}}
 
 I previously studied Chemical Engineering at UC Berkeley. I did a bit of research high-capacity, nickel-rich battery cathodes at Berkeley Lab and Tesla.
 
-Outside of work, I'm interested in global development, particularly how to lift out of poverty the [650 million people living on less than $2.15 per day](https://data.worldbank.org/indicator/SI.POV.DDAY). I'm also broadly interested in the [AI Alignment](https://forum.effectivealtruism.org/posts/rJRw78oihoT5paFGd/high-level-hopes-for-ai-alignment).
+Outside of work, I'm interested in global development, particularly how to lift out of poverty the [650 million people living on less than $2.15 per day](https://data.worldbank.org/indicator/SI.POV.DDAY). I'm also broadly interested in [AI Alignment](https://forum.effectivealtruism.org/posts/rJRw78oihoT5paFGd/high-level-hopes-for-ai-alignment).
 
 Away from the keyboard, I enjoy cycling, running, hiking/backpacking, piano, and photography.
 
