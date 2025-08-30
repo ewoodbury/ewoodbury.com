@@ -1,0 +1,41 @@
+/* Custom CSS to override theme width constraints */
+
+@media (min-width: 770px) {
+    body {
+        width: 900px; /* Increased from 600px to 900px for better readability */
+        max-width: 90%; /* Ensure it doesn't exceed 90% of viewport on smaller screens */
+    }
+    
+    /* Adjust the extended width elements to match the new body width */
+    main#content hr {
+        width: 105%; /* Reduced from 108% to maintain proportions */
+        margin-left: -2.5%; /* Adjusted margin */
+    }
+    
+    main#content img {
+        max-width: 105%; /* Reduced from 108% */
+        margin-left: -2.5%; /* Adjusted margin */
+    }
+    
+    main#content figure {
+        margin-left: -2.5%; /* Adjusted margin */
+    }
+    
+    main#content figure img {
+        max-width: 105%; /* Reduced from 108% */
+    }
+    
+    main#content pre {
+        width: 105%; /* Reduced from 108% */
+        margin-left: -2.5%; /* Adjusted margin */
+        padding: 1.5rem 2.2rem;
+    }
+}
+
+/* For even larger screens, you can make it even wider */
+@media (min-width: 1200px) {
+    body {
+        width: 1000px;
+        max-width: 85%;
+    }
+}
