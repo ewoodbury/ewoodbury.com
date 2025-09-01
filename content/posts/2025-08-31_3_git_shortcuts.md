@@ -4,7 +4,7 @@ date: 2025-08-31
 draft: false
 ---
 
-Here are three simple but useful Git shortcuts that I use dozens of times a day.
+Here are a few simple but useful Git shortcuts that I use dozens of times a day.
 
 TLDR: Add these to your `.bashrc` or `.zshrc`:
 
@@ -18,13 +18,14 @@ alias gp='git push'
 ```
 
 
-### 1. `gs`: Git Status
+### 1. `gs`: Status
+I prefer this condensed status view over the default.
 ```bash
 gs
 ```
 ![gs output](image.png)
 
-### 2. `glog`: Git Log Graph
+### 2. `glog`: Log Graph
 
 ```bash
 glog
