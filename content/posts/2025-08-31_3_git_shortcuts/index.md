@@ -19,11 +19,12 @@ alias gp='git push'
 
 
 ### 1. `gs`: Status
-I prefer this condensed status view over the default.
 ```bash
 gs
 ```
 ![gs output](image.png)
+
+I prefer this condensed status view over the default, but remove the `-sb` if you want the full version.
 
 ### 2. `glog`: Log Graph
 
