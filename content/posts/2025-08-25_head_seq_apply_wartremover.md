@@ -1,5 +1,5 @@
 ---
-title: "Safer Scala with WartRemover: Part 1 - Seq.apply and head"
+title: "Safer Scala with WartRemover Part 1: Seq.apply and head"
 date: 2025-08-25
 draft: false
 ---
