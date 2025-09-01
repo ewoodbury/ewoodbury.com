@@ -9,8 +9,12 @@ Here are three simple but useful Git shortcuts that I use dozens of times a day.
 TLDR: Add these to your `.bashrc` or `.zshrc`:
 
 ```bash
+alias g='git'
 alias gs='git status -sb'
 alias glog="git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
 ```
 
 
@@ -33,8 +37,17 @@ glog
 
 ```bash
 ga content/posts/
-gc -m "Add git shortcuts post"
+gc "Add git shortcuts post"
 gp
+```
+![alt text](image-2.png)
+
+### 4. `g`: Short for `git`
+
+Use for any other git command
+
+```bash
+g stash
 ```
 
 
