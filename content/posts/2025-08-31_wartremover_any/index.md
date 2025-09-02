@@ -1,7 +1,7 @@
 ---
 title: "Safer Scala with WartRemover Part 2: A Basic Guide to Removing Any"
 date: 2025-08-31
-draft: true
+draft: false
 ---
 
 This is the second in a series of posts about improving the Scala code quality, and using [WartRemover](https://www.wartremover.org/) as the static analysis tool to enforce these best practices.
