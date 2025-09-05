@@ -30,5 +30,24 @@
     <!-- Custom CSS for wider layout -->
     {{ printf `<link rel="stylesheet" href="%s">` ("css/custom.css" | absURL) | safeHTML }}
 
+    <!-- Mermaid.js for diagrams -->
+    {{ if .Page.Store.Get "hasMermaid" }}
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#333333',
+                primaryBorderColor: '#cccccc',
+                lineColor: '#666666',
+                secondaryColor: '#f9f9f9',
+                tertiaryColor: '#ffffff'
+            }
+        });
+    </script>
+    {{ end }}
+
     <title>{{ .Title }}</title>
 </head>

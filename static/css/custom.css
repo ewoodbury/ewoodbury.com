@@ -39,3 +39,28 @@
         max-width: 85%;
     }
 }
+
+/* Mermaid diagram styling */
+.mermaid {
+    text-align: center;
+    margin: 2rem 0;
+    overflow-x: auto;
+    padding: 1rem;
+    background-color: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+}
+
+/* Responsive adjustments for Mermaid on wider layouts */
+@media (min-width: 770px) {
+    .mermaid {
+        width: 105%;
+        margin-left: -2.5%;
+    }
+}
+
+/* Dark mode support for Mermaid (if your theme supports dark mode) */
+[data-theme="dark"] .mermaid {
+    background-color: #0d1117;
+    border-color: #30363d;
+}
