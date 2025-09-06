@@ -1,2 +1,5 @@
 .DS_Store
 .vscode/
+
+# Hugo generated site output
+public/
