@@ -31,7 +31,6 @@
     {{ printf `<link rel="stylesheet" href="%s">` ("css/custom.css" | absURL) | safeHTML }}
 
     <!-- Mermaid.js for diagrams -->
-    {{ if .Page.Store.Get "hasMermaid" }}
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script>
         mermaid.initialize({
@@ -47,7 +46,6 @@
             }
         });
     </script>
-    {{ end }}
 
     <title>{{ .Title }}</title>
 </head>
