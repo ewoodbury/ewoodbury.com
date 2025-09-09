@@ -42,6 +42,7 @@ Below, I share a Spark project template with Scala 2.13 that from what I've lear
 ## 1. Quickstart Guide
 
 1. Create a copy of the template repository using the "Use this template" button on GitHub. 
+
 <img src="image.png" alt="Github Use this template" style="max-width:300px; height:auto;" />
 
 2. Clone your new repository, and open it on your machine.
