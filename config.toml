@@ -33,3 +33,7 @@ weight = 2
 name = "Photos"
 url = "/photos"
 weight = 3
+
+[markup.goldmark.renderer]
+  # Allow HTML in Markdown (enables <details> tags and other HTML elements)
+  unsafe = true
