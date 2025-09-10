@@ -6,29 +6,54 @@
         max-width: 90%; /* Ensure it doesn't exceed 90% of viewport on smaller screens */
     }
     
-    /* Adjust the extended width elements to match the new body width */
+    /* Align images and code blocks with text content */
     main#content hr {
-        width: 105%; /* Reduced from 108% to maintain proportions */
-        margin-left: -2.5%; /* Adjusted margin */
+        width: 100%; /* Align with text width */
+        margin-left: 0; /* No negative margin */
     }
     
     main#content img {
-        max-width: 105%; /* Reduced from 108% */
-        margin-left: -2.5%; /* Adjusted margin */
+        max-width: 95%; /* Slightly narrower than text */
+        margin-left: 2.5%; /* Slight indentation */
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: block; /* Ensure proper spacing */
     }
     
     main#content figure {
-        margin-left: -2.5%; /* Adjusted margin */
+        margin-left: 2.5%; /* Slight indentation */
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        width: 95%; /* Slightly narrower than text */
     }
     
     main#content figure img {
-        max-width: 105%; /* Reduced from 108% */
+        max-width: 100%; /* Fill the figure container */
+        margin-left: 0; /* Reset margin within figure */
     }
     
     main#content pre {
-        width: 105%; /* Reduced from 108% */
-        margin-left: -2.5%; /* Adjusted margin */
+        width: 95%; /* Slightly narrower than text */
+        margin-left: 2.5%; /* Slight indentation */
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
         padding: 1.5rem 2.2rem;
+        border-radius: 6px; /* Add rounded corners for better appearance */
+        background-color: #f6f8fa; /* Light gray background */
+        overflow-x: auto; /* Handle horizontal scrolling for long code */
+        border: 1px solid #e1e4e8; /* Subtle border */
+    }
+    
+    /* Style blockquotes to match the indented layout */
+    main#content blockquote {
+        width: 95%;
+        margin-left: 2.5%;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.5rem;
+        border-left: 4px solid #0969da;
+        background-color: #f6f8fa;
+        border-radius: 0 6px 6px 0;
     }
 }
 
@@ -54,8 +79,10 @@
 /* Responsive adjustments for Mermaid on wider layouts */
 @media (min-width: 770px) {
     .mermaid {
-        width: 105%;
-        margin-left: -2.5%;
+        width: 95%; /* Slightly narrower than text content */
+        margin-left: 2.5%; /* Slight indentation to match other elements */
+        margin-top: 2rem;
+        margin-bottom: 2rem;
     }
 }
 
@@ -63,4 +90,31 @@
 [data-theme="dark"] .mermaid {
     background-color: #0d1117;
     border-color: #30363d;
+}
+
+/* Dark mode support for code blocks and blockquotes */
+@media (prefers-color-scheme: dark) {
+    main#content pre {
+        background-color: #161b22;
+        border-color: #30363d;
+        color: #e6edf3;
+    }
+    
+    main#content blockquote {
+        background-color: #161b22;
+        border-left-color: #2f81f7;
+        color: #e6edf3;
+    }
+}
+
+[data-theme="dark"] main#content pre {
+    background-color: #161b22;
+    border-color: #30363d;
+    color: #e6edf3;
+}
+
+[data-theme="dark"] main#content blockquote {
+    background-color: #161b22;
+    border-left-color: #2f81f7;
+    color: #e6edf3;
 }
