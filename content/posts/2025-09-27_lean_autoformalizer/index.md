@@ -1,7 +1,7 @@
 ---
 title: "Autoformalizer: Build math proofs in Lean with LLMs"
 date: 2025-09-28
-draft: true
+draft: false
 ---
 
 I built a project called Autoformalizer, which is a simple Python tool that builds verifiable proofs for simple math theorems in Lean 4. 
