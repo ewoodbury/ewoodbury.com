@@ -1,5 +1,5 @@
 ---
-title: "Autoformalizer: A simple tool to build math proofs in Lean via LLMs"
+title: "Autoformalizer: Build math proofs in Lean with LLMs"
 date: 2025-09-28
 draft: true
 ---
@@ -12,7 +12,7 @@ This was an incredibly fun and satisfying project! I've been interested in pure 
 
 You can check out the full project on [GitHub](https://github.com/ewoodbury/lean-autoformalizer).
 
-# Results
+## Results
 
 As of today, Autformalizer successfully proves 24 out of 26 simple theorems from an unseen test set, using Grok-4-fast.
 
@@ -109,15 +109,13 @@ Validation: Success! (7.21s)
 ```
 
 
-## Background
-
-### Lean
+## Lean
 
 Lean is a functional programming language, but more specifically an interactive theorem prover, which means it can be used to construct and verify mathematical proofs. A significant amount of math research over the last few years has heavily utilized Lean. One notable example is Kevin Buzzard and Richard Taylor's work to formalize [Fermat's Last Theorem in Lean](https://imperialcollegelondon.github.io/FLT/blueprint.pdf).
 
 Lean in particular has been picked up by AI research teams alongside the rise of LLMs. [DeepMind's AlphaProof](https://deepmind.google/discover/blog/ai-solves-imo-problems-at-silver-medal-level/) used Lean 4 and won the 2024 IMO Silver Medal ([code](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/imo-2024-solutions/index.html)). The startup [Math Inc.](https://www.math.inc/) recently published a complete formalization of the strong Prime Number Theorem in Lean 4, and is working to expand their autoformalizer. 
 
-In short, it's an exciting time for Lean, and for pure math in general!
+It's an exciting time for Lean, and for pure math in general!
 
 ## Architecture
 
@@ -152,6 +150,35 @@ flowchart TD
     success --> outputs["AutoformalizationResult to CLI/tests"]
     failure --> outputs
 ```
+## Initial Prompt
+
+The initial prompt is extremely simple: it explains the task to the LLM, and the provides a simple example of a statement plus proof pair.
+
+```python
+ENGLISH_TO_LEAN_PROMPT = (
+    "Given this mathematical statement in English, generate a complete Lean 4 theorem:\n\n"
+    "English: {statement}\n"
+    "Steps: {steps}\n\n"
+    "Generate the complete Lean theorem including imports and proof.\n"
+    "Use tactic mode with 'by' and keep it concise.\n\n"
+    "Example:\n"
+    'English: "For all natural numbers a and b, a + b = b + a"\n'
+    'Steps: ["Use commutativity of addition on naturals"]\n\n'
+    "Lean:\n"
+    "```lean\n"
+    "import Mathlib/Data/Nat/Basic\n\n"
+    "theorem add_comm_nat (a b : Nat) : a + b = b + a := by\n"
+    "  rw [Nat.add_comm]\n"
+    "```\n\n"
+    "Your turn:\n"
+    "English: {statement}\n"
+    "Steps: {steps}\n\n"
+    "Lean:\n"
+)
+```
+
+I haven't done any tuning on this prompt yet. My intuition is providing additional examples would be very helpful, especially if we try with more complex proofs. I think it could also clearly outline what imports and Mathlib modules are available, as import errors are a common failure mode currently.
+
 
 ## Error Recovery
 
@@ -243,9 +270,9 @@ if category == ErrorCategory.UNKNOWN_IDENTIFIER:
 
 I spent some time tuning the prompt templates, but for the most part the basic context was all that was needed. This type of rapid, targeted feedback loop seems to be one of the most effective ways to getting correct results from LLMs (similar to type checks/compiler errors for LLMs generating code).
 
-## Beam search
+### Beam search
 
-Beam search is a parallel sampling strategy: instead of generating only one proof candidate, it spins up several beam slots where each generates an independent candidate with slightly different randomness.
+Beam search is a parallel sampling strategy that improves error recovery for proofs. Instead of generating only one proof candidate during retries, it generates several candidates with slightly different randomness.
 
 On each subsequent retry, the executor increases the beam width and temperature to explore a wider candidate space, increasing the odds of finding a valid proof.
 
@@ -262,7 +289,7 @@ Again, I only spent limited time tuning this for now; increasing the beam width 
 
 Again, this was a fun project! I was very pleased with being able to build an end-to-end autoformalization system around Lean in about a week, especially given it can successfully prove the vast majority of the simple theorems in the test set.
 
-If I continue this project, the biggest next step is testing against more complex theorems. The current train and test sets are comprised of simple or even trivial theorems, with half of them being only a single-line proof. This is enough to still evaluate the LLM's adherence to correct Lean 4 syntax, but it doesn't reach the level of testing mathematical reasoning.
+If I continue this project, the biggest next step is testing against more complex theorems, and to run tests without providing suggested steps to the LLM. The current train and test sets are comprised of simple or even trivial theorems, with half of them being only a single-line proof. This is enough to still evaluate the LLM's adherence to correct Lean 4 syntax, but it doesn't reach the level of testing mathematical reasoning.
 
 It might also be fun to expand this to be a true LLM evaluation suite, where any LLM can be plugged in and have its mathemtical reasonning tested. I found some published benchmarks on this such as Epoch AI's [FrontierMath](https://epoch.ai/frontiermath), but it's still a relatively unexplored area.
 
