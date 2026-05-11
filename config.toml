@@ -20,19 +20,14 @@ theme = ["etch", "hugo-shortcode-gallery"]
     includeFields = ".*"
 
 [[menu.main]]
-name = "Posts"
-url = "/"
-weight = 1
-
-[[menu.main]]
 name = "About"
 url = "/about"
-weight = 2
+weight = 1
 
 [[menu.main]]
 name = "Photos"
 url = "/photos"
-weight = 3
+weight = 2
 
 [markup.goldmark.renderer]
   # Allow HTML in Markdown (enables <details> tags and other HTML elements)
