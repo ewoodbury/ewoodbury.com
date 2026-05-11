@@ -19,11 +19,17 @@
 
 ## Scala
 
-- WartRemover
+- Scala tidbit: https://github.com/ewoodbury/sparklet/pull/7/files#diff-d4d9b549808b0027eb709f59378e3b10d8aab2e165cf113306cf655946ec62f5R218-R231
+- My Scala setup (Metals, Scalafmt, Scalafix, WartRemover, etc)
+- Getting Started with WartRemover
 - Functional programming in real applications
+- Algebraic Data Types vs. Generic Types in Scala
+- Service Provider Interface to break down large projects
+- Graph traversal in a real-world Scala application (walk through Sparklet StageBuilder)
 
 ## Projects
 
+- 3 Simple Git Shortcuts
 - A purely functional Topological Sort in Scala 3
 - Exploring cats-effect
 - Exploring cats-actors (very small, 3rd party project)
