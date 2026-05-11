@@ -29,7 +29,9 @@
     
     main#content figure img {
         max-width: 100%; /* Fill the figure container */
-        margin-left: 0; /* Reset margin within figure */
+        margin-left: auto; /* Center the image */
+        margin-right: auto; /* Center the image */
+        display: block; /* Required for margin auto to work */
     }
     
     main#content pre {
