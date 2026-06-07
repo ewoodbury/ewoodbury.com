@@ -34,13 +34,6 @@
         display: block; /* Required for margin auto to work */
     }
     
-    /* Make profile images smaller */
-    main#content figure.profile-image img {
-        width: 300px !important; /* Make profile image smaller */
-        max-width: 300px !important;
-        height: auto;
-    }
-    
     main#content pre {
         width: 95%; /* Slightly narrower than text */
         margin-left: 2.5%; /* Slight indentation */

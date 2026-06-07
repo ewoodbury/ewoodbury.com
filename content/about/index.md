@@ -8,7 +8,7 @@ Before xAI, I worked on Tesla's Cell Manufacturing team, where I led a team that
 
 My technical strengths include distributed data processing (Spark and Ray), analytical data systems (data lakes, Iceberg, ClickHouse), and data validation and verifiability.
 
-{{< figure src="/profile.jpg" >}}
+{{< figure src="/profile.jpg" class="profile-image" >}}
 
 I studied Chemical Engineering at UC Berkeley. While there, I research high-capacity, nickel-rich battery cathodes at Berkeley Lab and Tesla.
 
