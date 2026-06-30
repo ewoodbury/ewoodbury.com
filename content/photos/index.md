@@ -1,8 +1,5 @@
 ---
 title: "Photos"
-menu:
-  main:
-    weight: 20
 ---
 
 (Click for fullscreen)

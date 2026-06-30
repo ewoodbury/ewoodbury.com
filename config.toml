@@ -24,11 +24,6 @@ name = "About"
 url = "/about"
 weight = 1
 
-[[menu.main]]
-name = "Photos"
-url = "/photos"
-weight = 2
-
 [markup.goldmark.renderer]
   # Allow HTML in Markdown (enables <details> tags and other HTML elements)
   unsafe = true
