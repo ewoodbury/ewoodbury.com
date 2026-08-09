@@ -1,6 +1,6 @@
 ---
 title: "A simple Git alias setup"
-date: 2025-08-31
+date: 2025-05-02
 draft: false
 ---
 
@@ -55,6 +55,6 @@ g stash
 
 
 
-There are many online resources with more comprehensive setups, but the ones below strike the right balance for me. Others that are interesting: 
+There are many online resources with more comprehensive setups, but the ones below strike the right balance for me. Others that are interesting:
 - [Must-Have Git Aliases](https://www.durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/)
 - [Ultimate Git Alias Setup](https://gist.github.com/mwhite/6887990)
