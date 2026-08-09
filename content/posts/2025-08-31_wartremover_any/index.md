@@ -4,7 +4,7 @@ date: 2025-08-31
 draft: false
 ---
 
-This is the second in a series of posts about improving the Scala code quality, and using [WartRemover](https://www.wartremover.org/) as the static analysis tool to enforce these best practices.
+This is the second in a series of posts about improving Scala code quality using the WartRemover static analysis tool, and more broadly about language restrictions to improve program correctness.
 
 The WartRemover Any rule is straightfoward; it bans the use of the `Any` type, including `AnyVal` and `AnyRef`.
 
@@ -47,7 +47,7 @@ findLexicographicalMax(numbers) // Returns 3
 val mixed = List("hello", 42) // Compile error: type mismatch
 ```
 
-Bonus: If we want to support multiple types in a single input, we can use Scala 3's new [union types](https://docs.scala-lang.org/scala3/book/types-union.html):
+Thanks to Scala 3, we can use the new [union types](https://docs.scala-lang.org/scala3/book/types-union.html) to hold multiple types within the same collection:
 ```scala
 def findMaxUnion(items: List[Int | String | Double]): Int | String | Double = {
   items.maxBy {
@@ -60,16 +60,16 @@ def findMaxUnion(items: List[Int | String | Double]): Int | String | Double = {
 val mixed = List(42, "hello", 3.14)
 findMaxUnion(mixed) // Returns "hello"
 
-val mixedUnsupported = List(42, "hello", List(1, 2)) 
+val mixedUnsupported = List(42, "hello", List(1, 2))
 findMaxUnion(mixedUnsupported)
 // Compile error: Required List[Int | String | Double]
 ```
 
 ### 2. More Complex Example
 
-Here's a more complex example from my real-world [Sparklet](https://github.com/ewoodbury/sparklet) project, a rebuild of Spark in Scala 3.
+Here's a more complex example from my real-world [Sparklet](https://github.com/ewoodbury/sparklet) project (a function rebuild of the Spark engine).
 
-In Sparklet, we neeed to generate job processing stages based on one of many possible transformations. An extremely naive implementation might use Any to handle the different transformation types, and thus have type erasure issues:
+In Sparklet, we generate data processing stages based on one of many supported transformations. A naive implementation would use Any to handle different transformation types, which would have the issue of erasing transformation types:
 ```scala
 def processOperation(op: Any): Any = {
   // We have no idea what operations are valid
@@ -80,7 +80,7 @@ def processOperation(op: Any): Any = {
   }
 }
 ```
-Here's a better approach using a sealed trait, which is extended by each operation:
+Here's a better approach using a sealed trait:
 ```scala
 sealed trait Operation[A, B]
 
@@ -96,7 +96,7 @@ final case class MapValuesOp[K, V, V2](f: V => V2) extends Operation[(K, V), (K,
 
 def processOperation[A, B](op: Operation[A, B]): String = op match {
   case MapOp(f) => s"Map operation with function: $f"
-  case FilterOp(p) => s"Filter operation with predicate: $p" 
+  case FilterOp(p) => s"Filter operation with predicate: $p"
   case FlatMapOp(f) => s"FlatMap operation with function: $f"
   case KeysOp() => "Extract keys from key-value pairs"
   case ValuesOp() => "Extract values from key-value pairs"
@@ -108,7 +108,7 @@ Link to Sparklet code: [Operations.scala](https://github.com/ewoodbury/sparklet/
 
 ### 3. When Any is Unavoidable
 
-Here's another example from stage building, where we need to handle multiple operation types that have been type-erased to `Operation[Any, Any]` at runtime. The problematic approach scatters unsafe casting throughout the core transofromation logic:
+Here's another example from Sparklet's stage builder, where we handle operation types that were erased to `Operation[Any, Any]` at runtime. There are unsafe casts all throughout the core logic:
 
 ```scala
 private def createStageFromOp(op: Operation[Any, Any]): Stage[Any, Any] = {
@@ -124,13 +124,16 @@ private def createStageFromOp(op: Operation[Any, Any]): Stage[Any, Any] = {
 }
 ```
 
-In this case, `Any` is unavoidable because operations with different type parameters (like `MapOp[String, Int]` and `FilterOp[Double]`) must be stored together in collections and processed together. We're forced to use `Operation[Any, Any]` as a common supertype. Here's how we handle this: 
+This is one of the few locations within Sparklet where `Any` is truly unavoidable, because operations with different types (`MapOp[String, Int]` and `FilterOp[Double]`) must be processed together in a single hetergeneous Scala collection. There's no way to keep the types intact throughout the entire stage building operation; we need to use `Operation[Any, Any]` as a common type instead.
+
+We handle this by isolating the `Any` usage to a boundary method, `createStageFromOpUnsafe`; type safety is preserved elsewhere in the class. Ideally, this unsafe method would be subject to focused unit testing, relying on runtime checks in lieu of compile-time safety.
+
 ```scala
 // Type-safe stage builders
 object StageBuilder {
   def fromOperation[A, B](op: Operation[A, B]): Stage[A, B] = op match {
     case MapOp(f) => Stage.map(f)
-    case FilterOp(p) => Stage.filter(p) 
+    case FilterOp(p) => Stage.filter(p)
     case FlatMapOp(f) => Stage.flatMap(f)
     case KeysOp() => Stage.keys[A, B] // Type parameters are preserved in core logic
     case ValuesOp() => Stage.values[A, B]
@@ -146,7 +149,5 @@ private def createStageFromOpUnsafe(op: Operation[Any, Any]): Stage[Any, Any] = 
 }
 ```
 Lint to Sparklet code: [StageBuilder.scala](https://github.com/ewoodbury/sparklet/blob/main/modules/sparklet-execution/src/main/scala/com/ewoodbury/sparklet/execution/StageBuilder.scala)
-
-We handle this case by isolating the `Any` usage to a single boundary method, `createStageFromErasedOp`; type safety is preserved elsewhere in the class. We can cover this method with focused testing as a fallback.
 
 A few other examples of when `Any` is necessary would be when using reflection APIs, serialization/deserialization like JSON, or interacting with external systems where types are dynamic.
