@@ -1,6 +1,6 @@
 ---
 title: "Rebuilding Apache Spark's StageBuilder from Scratch"
-date: 2025-09-04
+date: 2025-09-06
 draft: false
 ---
 
@@ -20,7 +20,7 @@ These concepts closely mirror Apache Spark's architecture.
 - Stage Boundary: A point where a stage must end, typically due to a shuffle operation.
 - Shuffle: An operation where data is redistributed across the cluster between executors, to prepare for later stages.
 
-The StageBuilder is a single-threaded, local component that runs at the start of a job, which means we fortunately don't need to worry about networking, concurrency, or distribution of logic. The focus here is on correctness and achieving planning optimizations that will be realized later during exeuction. 
+The StageBuilder is a single-threaded, local component that runs at the start of a job, which means we fortunately don't need to worry about networking, concurrency, or distribution of logic. The focus here is on correctness and achieving planning optimizations that will be realized later during exeuction.
 
 
 ### Architecture
@@ -37,34 +37,34 @@ At the end, the newly-built execution dependency graph is validated for correctn
 ```mermaid
 flowchart TD
     A[Plan Tree Input] --> B{Analyze Operation Type}
-    
+
     B -->|Narrow Operation| C[Accumulate into Current Stage]
     B -->|Wide Operation| D[Create Shuffle Boundary]
     B -->|Multi-Input Operation| E[Create Union Stage]
-    
+
     C --> F{Can Chain?}
     F -->|Yes| G[Add to Operation Vector]
     F -->|No| H[Create New Stage]
-    
+
     D --> I[Create Shuffle Stage with WideOp]
     E --> J[Create Stage with Multiple InputSources]
-    
+
     G --> K[Continue Processing]
     H --> K
     I --> K
     J --> K
-    
+
     K --> L{More Operations?}
     L -->|Yes| B
     L -->|No| M[Materialize Operations into Stages]
-    
+
     M --> N[Build Stage Graph]
     N --> O[Validate Stage Graph]
-    
+
     classDef narrow fill:#e1f5fe
     classDef wide fill:#fff3e0
     classDef validation fill:#f3e5f5
-    
+
     class C,G,H,Q narrow
     class D,I,R wide
     class O,T,U,V,W validation
@@ -105,7 +105,7 @@ The StageBuilder attempts to chain together as many narrow operations as possibl
       ops.headOption match {
         case Some(firstOp) =>
           // subsequent ops are chained via fold onto the stage from the first op:
-          ops.drop(1).foldLeft(createStageFromOp(firstOp)) { (stage, op) => 
+          ops.drop(1).foldLeft(createStageFromOp(firstOp)) { (stage, op) =>
             chainOperationUnsafe(stage, op)
           }
         case None =>
@@ -299,7 +299,7 @@ If Sparklet has determined that a shuffle is unavoidable, it creates a shuffle b
 </details>
 
 
-### Validation 
+### Validation
 
 The final main step is the validation of the generated graph. We run the following checks:
 - Acyclic: Ensure there are no cycles in the stage dependency graph.

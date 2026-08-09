@@ -1,7 +1,7 @@
 ---
 title: "Safer Scala with WartRemover Part 3: Null and Option.get"
 date: 2025-09-01
-draft: true
+draft: false
 ---
 
 This is the third post in a series about using WartRemover to improve Scala code quality, and more broadly about language safety.
