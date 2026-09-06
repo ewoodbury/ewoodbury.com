@@ -14,7 +14,7 @@ theme = ["etch", "hugo-shortcode-gallery"]
   # Contact/social-network identifiers for social icons
   EmailAddress = "ethwoodbury@gmail.com"
   GitHubUser = "ewoodbury"
-  TwitterUser = "etwoodbury"
+  XUser = "etmwo"
 
 [imaging.exif]
     includeFields = ".*"
