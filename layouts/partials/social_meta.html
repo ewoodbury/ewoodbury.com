@@ -1,5 +1,5 @@
 {{- $siteHost := (urls.Parse .Site.BaseURL).Host -}}
-{{- $title := .Title | default .Site.Title -}}
+{{- $title := cond .IsHome .Site.Title (.Title | default .Site.Title) -}}
 {{- $description := .Site.Params.Description | default .Site.Title -}}
 {{- if and .IsPage (in .Site.MainSections .Section) -}}
     {{- $description = printf "%s · %s words · %d min read" $siteHost (lang.FormatNumber 0 .WordCount) .ReadingTime -}}
