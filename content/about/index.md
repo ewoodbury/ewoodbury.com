@@ -17,6 +17,6 @@ Outside of work, I've been spending time on functional programming, type systems
 ## Links
 
 - [Github](https://github.com/ewoodbury)
-- [X](https://x.com/etmwo)
+- <a href="https://x.com/etmwo" target="_blank" rel="noopener">X</a>
 - [LinkedIn](https://www.linkedin.com/in/ethan-woodbury/)
 - [BatteryCost.me](https://www.batterycost.me) - An application for modeling the cost of lithium-ion batteries
