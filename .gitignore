@@ -3,3 +3,5 @@
 
 # Hugo generated site output
 public/
+# Hugo resource cache
+resources/
