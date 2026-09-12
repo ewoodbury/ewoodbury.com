@@ -48,5 +48,5 @@
         });
     </script>
 
-    <title>{{ .Title }}</title>
+    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Site.Title }} | {{ .Title }}{{ end }}</title>
 </head>
