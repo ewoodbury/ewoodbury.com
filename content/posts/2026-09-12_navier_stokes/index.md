@@ -55,7 +55,7 @@ For inflows and outflows, we again track the changes at the edge of the containe
 
 The last term accounts for the change in momentum from forces. Unlike mass however, momentum can be created: we track that momentum is conserved via forces: any change in momentum must always be accompanied with an applied force (from Newton's 2nd Law and `F = ma`).
 
-For fluids, the momentum from external forces is split into two terms. The first is body forces, and expressed as `rho*b`. Again rho is the mass term, and b is the simply the force per unit mass, which we can typically take as gravity (9.8 m/s^2). This term is exactly the same as for a rigid body (F_gravity = mg) as fluid acts the same on both.
+For fluids, the momentum from external forces is split into two terms. The first is body forces, and expressed as `rho*b`. Again `rho` is the mass (density) term, and b is the simply the force per unit mass, which we can typically take as gravity (9.8 m/s^2). This term is exactly the same as for a rigid body (F_gravity = mg) as fluid acts the same on both.
 
 The second term is due to pressure in the fluid. A fluid is fully made up of particles constantly colliding with each other, exerting a force with each collision. With Newton's 3rd law we know that every force has an equal and opposite reaction, which has the nice effect of cancelling out in pairs. The only forces not cancelled are those at the edge of the volume: forces coming from outside of the control volume. We can simply express this as `∇p`. Simply having high versus low pressure doesn't make a difference; it's the net force due to the difference in pressures on different sides of the volume.
 
@@ -119,7 +119,9 @@ simplifies to the simplified Cauchy equation:
 ρ Du/Dt = ∇·σ + ρb
 ```
 
-## Expanding on Viscous Stress to get Navier-Stokes
+## Viscous Stress to get Navier-Stokes
+
+### Viscous Forces
 
 We already saw that in the no-viscosity case, `σ` was simple set as pressure `P`, and with the full Cauchy, `σ` does include the additional stress terms.
 
@@ -141,4 +143,77 @@ Next up though, we break down `σᵛ` into smaller terms that inform the forces 
 ```
 The tensor constant is the physical property, it only depends on what the fluid is that we're working with. Water has low viscosity while honey has high, so that tensor constant is higher for honey and it transfers more momentum across the fluid body for a given force.
 
-The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force.
+The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force. Let's further break down this rate term.
+```
+σᵛ = 2μE      +       λ(∇·u) I
+     ↑                   ↑
+   resists SHEARING      resists EXPANSION/compression
+   (shear viscosity μ)   (bulk viscosity λ)
+```
+As mentioned above, this consists of pure shear forces (side-to-side) and pressure forces (in and out), each of which has their own viscosity constant for that particular fluid: `μ` as the shear viscosity, and `λ` as the build viscosity. Again, shear velocity is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it's essentially how hard the fluid is to squeeze. A balloon full of air can be squeezed to reduce volume pretty easily; a water balloon on the other hand does not compress, any squeezes will just move water around, with overall balloon volume remaining constant.
+
+Then, `E` and `(∇·u)` are simply the deformation rates. Faster sliding means higher E, and faster compression/expansion means higher magnitude of `(∇·u)`. More explicitly, to break down to simplest terms, E can be given as:
+```
+E = ½(∇u + ∇uᵀ)
+```
+to be in terms of the same velocity gradient `∇u` and the antisymmetric term `∇uᵀ` (from matrix algebra).
+
+Therefore, we arrive at:
+
+```
+σᵛ  =  2μE  +  λ(∇·u) I =  μ(∇u + ∇uᵀ)  +  λ(∇·u)
+```
+
+### Putting it all Together
+
+At this point, it's a pure algebra exercise, with the goal of simplifying everything down to the basic variables of density `rho`, velocity `u`, and constants.
+
+First we take our new shear viscosity term `σᵛ` and apply the divergence operator, since that's where Cauchy has the `σ`:
+```
+∇·σᵛ = μ∇²u + μ∇(∇·u) + λ∇(∇·u)
+```
+
+
+```
+ρ Du/Dt = ∇·σ + ρb
+
+-->
+
+ρ Du/Dt = ∇·(−pI  +  σᵛ) + ρb
+
+-->
+
+ρ Du/Dt = −∇p + μ∇²u + (λ + μ)∇(∇·u) + ρb
+```
+
+And that's it! We've now arrived at the full Navier-Stokes equation governing fluid flow, all in terms of basic, measurable fluid properties.
+
+```
+Full Navier-Stokes (compressible fluid)
+ρ Du/Dt = −∇p + μ∇²u + (λ + μ)∇(∇·u) + ρb
+```
+
+We've touched on the simplifications across this derivation, but to show them together here as they'll often be applied to show as a simplified form:
+```
+Euler:              σᵛ = 0                  (no viscous at all)
+ρ Du/Dt = ∇·σ + ρb
+
+Incompressible NS:  σᵛ = 2μE                (λ-term dead: ∇·u = 0)
+ρ Du/Dt = −∇p + μ∇²u + μ∇(∇·u)
+```
+
+## The 2026 Proposed Solution
+
+Although I won't deeply analyze the Millenium Prize problem and solution itself, I do think it's worth a passing discussion after we walked through the full derivation.
+
+The problem essentially asks the question: does Navier-Stokes hold up across all time-scales and length-scales, or does it break down under some sort special conditions? In other words, do these equations result in an impossible infinite fluid velocity under some physical conditions?
+
+There were two dimensions of the problem under active research: without vs. with viscous forces (Euler equation vs. full N-S), with the Buckmaster/Alpoge tackling Euler and OAI tacking full N-S. Second dimension is forced versus unforced, where forced means some external force is applied to the system to cause a perturbation in the fluid and cause the breakdown, and unforced goes without any external perturbation. I'm not familiar with the active research, but both Buckmaster/Alpoge and OAI tackled the forced setup, while unforced seemed to be the much more common current research area, and this fact was the major driver of the research privacy controversy.
+
+Of course, it shouldn't be overlooked that any version of these solutions is a massive milestone for fluid dynamics and mathematics overall. I hope that this can be a spark for further mathematics research into related and new problems, and that it can be an opportunity for the wider world to get some insight and I dare say even enjoyment into this typically inaccessible field.
+
+## Wrap-up
+
+In my opinion, this is a rather beautiful derivation, in that it does not depend on any esoteric concepts, contrived mathematical constructions, or 4+ dimensional systems. Every single term has a true physical analogue with which everyone is familiar. Yet, despite the simplicity of the building blocks, it builds a governing equation that can be the subject of study of both engineering and pure math for hundreds of years. It's also feels stunning to me that only in 2026 have we found the true limits of where this equation can be applied.
+
+A final parting thought is this derivation flow is a tiny microcosm of what math research is really like, at least to my inexperienced mind, and that this process does have an puzzle-like quality which does speak to the inherent value of mathematics in the AI age. Modern research and proofs are orders of magnitude more complex that this, and I do agree that the limited practical value of pure math research should warrant skepticism. 
