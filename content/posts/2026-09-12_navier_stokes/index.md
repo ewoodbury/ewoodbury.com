@@ -1,10 +1,10 @@
 ---
-title: "Navier Stokes: A Gentle Introduction"
+title: "Navier-Stokes: A Gentle Introduction"
 date: 2026-09-12
 draft: true
 ---
 
-My academic background was in Chemical Engineering, so it was particularly exciting for me to see the Navier-Stokes equations, something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fueling the weekly controversy on X.
+It was particularly exciting to see the Navier-Stokes equations get a proposed solution last week. My background is Chemical Engineeering, so it was fun to see something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fuel such controversy on X and elsewhere.
 
 Despite the controversy, one thing which shouldn't be missed is we know the solution to another Millennium Prize problem! Particularly so, with Navier-Stokes being the problem with the most connection to the physical world. This is the one Millennium problem that a person with light math background has a chance to fully understand, at least for the raw equations themselves. I took the opportunity to refamiliarize myself with this math, and to put together an approachable introduction for anyone wanting to build an intuitive understanding. 
 
@@ -55,7 +55,7 @@ Recall that momentum is `mass * velocity`, yet we divide by a constant volume to
 
 For inflows and outflows, we again track the changes at the edge of the container. Here that term is `(u·∇)u`.
 
-The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary — and any such change must come from an applied force (from Newton's 2nd Law and `F = ma`).
+The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law and `F = ma`).
 
 For fluids, the momentum from external forces is split into two terms. The first is body forces, expressed as `ρb`. `ρ` is still density, and b is simply the force per unit mass, which we can typically take as gravity (9.8 m/s^2). This term is exactly the same as for a rigid body (`F_gravity = mg`) since gravity acts the same on both.
 
@@ -86,14 +86,16 @@ Next, we'll add in viscosity, which is shear (dragging) force of the fluid upon 
 Now, note that pressure is the common way of thinking about forces in fluids; the outside pressure is always pointed inward. In a more general sense, there can be sideways and diagonal forces on a volume of fluid. We use `sigma` for this tensor force instead of pressure `p`.
 
 
-In practical terms, σ is a field: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
+In practical terms, σ is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
 ```
        [ −1.1×10⁵      0          0    ]
 σ  ≈   [    0      −1.1×10⁵       0    ]  Pa
        [    0          0      −1.1×10⁵ ]
 ```
 
-If pressure doubles, those values double as well. But the non-diagonal terms which represent the shear forces are zero here — and note this is true of *any* fluid at rest, regardless of viscosity: sideways forces only appear when the fluid is moving. The assumption behind these equations is stronger still: there are no sideways forces *even while the fluid flows* (the zero-viscosity, or inviscid, idealization). Think about putting a layer of water between two flat baking pans and sliding them past each other; there is essentially no resistance.
+If pressure doubles, those values double as well. But the non-diagonal terms which represent the shear forces are zero here because we're assuming the fluid is at rest; the only force is the inward pressure. When the fluid moves, those terms become nonzero.
+
+The assumption behind these equations is stronger still: there are no sideways forces *even while the fluid flows* (the zero-viscosity, or inviscid, idealization). Think about putting a layer of water between two flat baking pans and sliding them past each other; there is essentially no resistance.
 
 But what if that were a layer of honey instead: now there is significant resistance to sliding the two pans. This is because honey has viscosity: it conducts the shear forces within itself and thus resists a change in momentum even when under the same force.
 
