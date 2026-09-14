@@ -104,7 +104,7 @@ In practical terms, \(\boldsymbol{\sigma}\) is a field in 3-dimensions: in this 
 
 If pressure doubles, those values double as well. But the non-diagonal terms which represent the shear forces are zero here because we're assuming the fluid is at rest; the only force is the inward pressure. When the fluid moves, those terms become nonzero.
 
-The assumption behind these equations is stronger still: there are no sideways forces *even while the fluid flows* (the zero-viscosity, or inviscid, idealization). Think about putting a layer of water between two flat baking pans and sliding them past each other; there is essentially no resistance.
+Still, in low-viscosity fluids this shear force from movement is small. Imagine putting a layer of water between two flat baking pans and sliding them past each other: there is very little resistance even though the water is moving.
 
 But what if that were a layer of honey instead: now there is significant resistance to sliding the two pans. This is because honey has viscosity: it conducts the shear forces within itself and thus resists a change in momentum even when under the same force.
 
@@ -153,14 +153,14 @@ Next up though, we break down \(\boldsymbol{\sigma}^{v}\) into smaller terms tha
 \]
 The tensor constant is the physical property, it only depends on what the fluid is that we're working with. Water has low viscosity while honey has high, so that tensor constant is higher for honey and it transfers more momentum across the fluid body for a given force.
 
-The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force. Let's further break down this rate term.
+The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force. We can further break down this rate term:
 
 \[
 \boldsymbol{\sigma}^{v} =
 \underbrace{2\mu \mathbf{E}}_{\text{resists shearing}} +
 \underbrace{\lambda (\nabla \cdot \mathbf{u})\mathbf{I}}_{\text{resists expansion/compression}}
 \]
-As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a rapid change in volume: internal friction during a fast squeeze or expansion. (This is separate from compressiblity, which is the overall ability to change volume regardless of rate.)
+The rate term consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a rapid change in volume: internal friction during a fast squeeze or expansion. (This is separate from compressiblity, which is the overall ability to change volume regardless of rate.)
 
 Then, \(\mathbf{E}\) and \((\nabla \cdot \mathbf{u})\) are simply the deformation rates. Faster sliding means higher \(\mathbf{E}\), and faster compression/expansion means higher magnitude of \((\nabla \cdot \mathbf{u})\). More explicitly, to break down to simplest terms, \(\mathbf{E}\) can be given as:
 
