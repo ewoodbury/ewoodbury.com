@@ -2,8 +2,6 @@
 title: "Navier Stokes: A Gentle Introduction"
 date: 2026-09-12
 draft: true
-headerImage: "navier-stokes-light.png"
-headerAlt: "Vortex filaments in blue, teal, and gold spiraling around a vertical vorticity axis"
 ---
 
 My academic background was in Chemical Engineering, so it was particularly exciting for me to see the Navier-Stokes equations, something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fueling the weekly controversy on X.
