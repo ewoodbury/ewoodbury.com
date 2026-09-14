@@ -7,7 +7,7 @@
 {{- $cardImage := "" -}}
 {{- with .Params.headerImage -}}
     {{- with $.Resources.GetMatch . -}}
-        {{- $cardImage = .Fill "1200x630 jpg q90" -}}
+        {{- $cardImage = .Fit "1200x1200 jpg q90" -}}
     {{- end -}}
 {{- end -}}
 

@@ -1,14 +1,5 @@
 {{ define "main" }}
 <article>
-    {{- with .Params.headerImage }}
-        {{- with $.Resources.GetMatch . }}
-            {{- $img := .Resize "1200x webp" -}}
-            <figure class="post-header-image">
-                <img src="{{ $img.RelPermalink }}" width="{{ $img.Width }}" height="{{ $img.Height }}"{{ with $.Params.headerAlt }} alt="{{ . }}"{{ end }}>
-                {{- with $.Params.headerCaption }}<figcaption>{{ . | $.RenderString }}</figcaption>{{ end -}}
-            </figure>
-        {{ end }}
-    {{ end }}
     <header id="post-header">
         <h1>{{ .Title }}</h1>
         <div>
@@ -21,6 +12,15 @@
         {{- end -}}
         </div>
     </header>
+    {{- with .Params.headerImage }}
+        {{- with $.Resources.GetMatch . }}
+            {{- $img := .Fit "1200x480 webp" -}}
+            <figure class="post-header-image">
+                <img src="{{ $img.RelPermalink }}" width="{{ $img.Width }}" height="{{ $img.Height }}"{{ with $.Params.headerAlt }} alt="{{ . }}"{{ end }}>
+                {{- with $.Params.headerCaption }}<figcaption>{{ . | $.RenderString }}</figcaption>{{ end -}}
+            </figure>
+        {{ end }}
+    {{ end }}
     {{- .Content -}}
 </article>
 {{ end }}

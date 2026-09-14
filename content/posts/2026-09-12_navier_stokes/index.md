@@ -2,6 +2,8 @@
 title: "Navier-Stokes: A Gentle Introduction"
 date: 2026-09-12
 draft: true
+headerImage: "navier-stokes-light.png"
+headerAlt: "Vortex filaments in blue, teal, and gold spiraling around a vertical vorticity axis"
 ---
 
 It was particularly exciting to see the Navier-Stokes equations get a proposed solution last week. My background is Chemical Engineeering, so it was fun to see something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fuel such controversy on X and elsewhere.
