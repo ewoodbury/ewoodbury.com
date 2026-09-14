@@ -123,16 +123,10 @@ With this generalization of shear force included, we arrive at the full Cauchy m
 Cauchy Momentum Equation:
 
 \[
-\frac{\partial (\rho \mathbf{u})}{\partial t} + \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u}) = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
-\]
-
-As an additional step, we can consolidate the inflow/outflow gradient term to be inside the derivative.
-
-\[
 \rho \left[ \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla)\mathbf{u} \right] = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
 \]
 
-which simplifies to the simplified Cauchy equation:
+which, using the material derivative `D/Dt` from the Euler section, simplifies to the compact Cauchy equation:
 
 \[
 \rho \frac{D\mathbf{u}}{Dt} = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
