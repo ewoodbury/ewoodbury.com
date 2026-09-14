@@ -16,64 +16,65 @@ This post covers the Navier Stokes equations themselves; I don't cover the contr
 
 ---
 
-Fluid dynamics is the study of forces on a continuous mass (liquids and gasses), in contrast to rigid body dynamics. In that sense, one could think of fluid dynamics as extending the typical dynamics concepts from Physics 1 (`F = ma`, `τ = rF sinθ`) onto a body of infinitesimally small objects, until you reach the point of modeling the forces on a single continuous, flowing mass. It's similar to going from algebra to calculus, where we go from discrete variables to continuous quantities at tiny scales (This is of course an oversimplification, but it helps frame the question of "what is fluid dynamics" and explains how we came up with this new set of equations.)
+Fluid dynamics is the study of forces on a continuous mass (liquids and gasses), in contrast to rigid body dynamics. In that sense, one could think of fluid dynamics as extending the typical dynamics concepts from Physics 1 (\(F = ma\), \(\tau = rF \sin\theta\)) onto a body of infinitesimally small objects, until you reach the point of modeling the forces on a single continuous, flowing mass. It's similar to going from algebra to calculus, where we go from discrete variables to continuous quantities at tiny scales (This is of course an oversimplification, but it helps frame the question of "what is fluid dynamics" and explains how we came up with this new set of equations.)
 
 ## Mass Balance
 
 Before we get to the full equations, the key concept to be familiar with is that of the physical laws of conservation. It's obvious that mass is conserved (ignoring relativity), whether dealing with discrete objects or our continuous case with fluids. Mass inside a closed system is conserved, because nothing can flow in or out. In an open system though, we can describe the change in mass simply by writing a "balance", which simply accounts for what flows in versus what flows out. (Note I'm starting by assuming an incompressible fluid like water, which can be approximated as incompressible).
 
-In words, for a given volume, our balance is simply: `( net inflow )  +  ( net outflow )  =  0`. In math, it's simply `∇·u = 0`, where `u` is what we use for velocity, and `∇·` is the divergence operator and essentially means the total outward change in volume, summed across all 3 dimensions. For an incompressible fluid like water, density is constant, so this is the same as the mass balance.
+In words, for a given volume, our balance is simply: `( net inflow )  +  ( net outflow )  =  0`. In math, it's simply \(\nabla \cdot \mathbf{u} = 0\), where \(\mathbf{u}\) is what we use for velocity, and \(\nabla \cdot\) is the divergence operator and essentially means the total outward change in volume, summed across all 3 dimensions. For an incompressible fluid like water, density is constant, so this is the same as the mass balance.
 
-```
-Volume Balance (Incompressible fluid)
+Volume Balance (Incompressible fluid):
 
-∇·u = 0
-```
+\[
+\nabla \cdot \mathbf{u} = 0
+\]
 
 This is intuitive: if you hold a straw in a flowing stream, the amount of water in it is always constant, as the volume of water flowing in is exactly equal to the volume flowing out.
 
-Now, if instead of water, what if we're dealing with air, which is compressible? If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since we're keeping a constant control volume, we divide by the volume to track change in density (`rho`) instead:
+Now, if instead of water, what if we're dealing with air, which is compressible? If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since we're keeping a constant control volume, we divide by the volume to track change in density (\(\rho\)) instead:
 
-```
-Mass Balance (Compressible Fluid)
-∂ρ/∂t    +   ∇·(ρu)         =   0
-```
+Mass Balance (Compressible Fluid):
 
-Here, the `∂ρ/∂t` term is the "partial derivative" change (`∂`) in density (`ρ`) over time (`t`). The divergence (`∇·`) operator accounts for the possible density difference of flow in versus out. Then, the zero is unchanged to reflect conservation of mass.
+\[
+\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{u}) = 0
+\]
+
+Here, the \(\partial \rho / \partial t\) term is the "partial derivative" change (\(\partial\)) in density (\(\rho\)) over time (\(t\)). The divergence (\(\nabla \cdot\)) operator accounts for the possible density difference of flow in versus out. Then, the zero is unchanged to reflect conservation of mass.
 
 Annotated, this is: 
-```
-∂ρ/∂t          +   ∇·(ρu)         =   0
-(change inside)    (carried by        (no way to
-                    the flow)          create it)
-```
+\[
+\underbrace{\frac{\partial \rho}{\partial t}}_{\text{change inside}}
+  + \underbrace{\nabla \cdot (\rho \mathbf{u})}_{\text{carried by the flow}}
+  = \underbrace{0}_{\text{no way to create it}}
+\]
 
 
 ## Momentum Balance (Euler Equation)
 
 The other conservation quantity is momentum: we construct a similar momentum balance to track the effect of forces on the fluid's properties. 
 
-Recall that momentum is `mass * velocity`, yet we divide by a constant volume to track in terms of density instead. So we'll make the balance on the momentum term `ρu`.
+Recall that momentum is `mass * velocity`, yet we divide by a constant volume to track in terms of density instead. So we'll make the balance on the momentum term \(\rho \mathbf{u}\).
 
-For inflows and outflows, we again track the changes at the edge of the container. Here that term is `(u·∇)u`.
+For inflows and outflows, we again track the changes at the edge of the container. Here that term is \((\mathbf{u} \cdot \nabla)\mathbf{u}\).
 
-The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law and `F = ma`).
+The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law and \(F = ma\)).
 
-For fluids, the momentum from external forces is split into two terms. The first is body forces, expressed as `ρb`. `ρ` is still density, and b is simply the force per unit mass, which we can typically take as gravity (9.8 m/s^2). This term is exactly the same as for a rigid body (`F_gravity = mg`) since gravity acts the same on both.
+For fluids, the momentum from external forces is split into two terms. The first is body forces, expressed as \(\rho \mathbf{b}\). \(\rho\) is still density, and \(b\) is simply the force per unit mass, which we can typically take as gravity (\(9.8\,\text{m/s}^2\)). This term is exactly the same as for a rigid body (\(F_{\text{gravity}} = mg\)) since gravity acts the same on both.
 
 The second term is pressure in the fluid. A fluid is fully made up of particles constantly colliding with each other, with each collision exerting a force. From Newton's 3rd law, every force has an equal and opposite reaction, so all collisions cancel out forces in pairs. The only forces not cancelled are those at the edges, from forces coming from outside of the control volume. 
 
-We simply express the net force as `−∇p` (note the minus sign: the force points from high pressure toward low), where `∇` (without the dot) is the gradient operator and means the change in all 3 dimensions. Simply having high versus low pressure doesn't make a difference; it's the net force due to the difference in pressures on different sides of the volume.
+We simply express the net force as \(-\nabla p\) (note the minus sign: the force points from high pressure toward low), where \(\nabla\) (without the dot) is the gradient operator and means the change in all 3 dimensions. Simply having high versus low pressure doesn't make a difference; it's the net force due to the difference in pressures on different sides of the volume.
 
 At this point, we can put together the full momentum balance:
-```
-Euler Momentum balance
+Euler Momentum balance:
 
-∂(ρu)/∂t       +   ρ(u·∇)u      =   −∇p + ρb
-(change inside)    (carried by        (created by
-                    the flow)          forces)
-```
-(Note this can also be shown with the full outer product term `⊗` or full partial differential equations in 3D.)
+\[
+\underbrace{\frac{\partial (\rho \mathbf{u})}{\partial t}}_{\text{change inside}}
+  + \underbrace{\rho (\mathbf{u} \cdot \nabla)\mathbf{u}}_{\text{carried by the flow}}
+  = \underbrace{-\nabla p + \rho \mathbf{b}}_{\text{created by forces}}
+\]
+(Note this can also be shown with the full outer product term \(\otimes\) or full partial differential equations in 3D.)
 
 In words, the momentum change inside the volume plus the momentum change from inflows and outflows, must always equal the net forces exerted on the volume.
 
@@ -85,15 +86,18 @@ Next, we'll add in viscosity, which is shear (dragging) force of the fluid upon 
 
 ## Shear Forces (Cauchy momentum)
 
-Now, note that pressure is the common way of thinking about forces in fluids; the outside pressure is always pointed inward. In a more general sense, there can be sideways and diagonal forces on a volume of fluid. We use `sigma` for this tensor force instead of pressure `p`.
+Now, note that pressure is the common way of thinking about forces in fluids; the outside pressure is always pointed inward. In a more general sense, there can be sideways and diagonal forces on a volume of fluid. We use \(\boldsymbol{\sigma}\) for this tensor force instead of pressure \(p\).
 
 
-In practical terms, σ is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
-```
-       [ −1.1×10⁵      0          0    ]
-σ  ≈   [    0      −1.1×10⁵       0    ]  Pa
-       [    0          0      −1.1×10⁵ ]
-```
+In practical terms, \(\boldsymbol{\sigma}\) is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
+\[
+\boldsymbol{\sigma} \approx
+\begin{bmatrix}
+-1.1\times 10^5 & 0 & 0 \\
+0 & -1.1\times 10^5 & 0 \\
+0 & 0 & -1.1\times 10^5
+\end{bmatrix} \, \text{Pa}
+\]
 
 If pressure doubles, those values double as well. But the non-diagonal terms which represent the shear forces are zero here because we're assuming the fluid is at rest; the only force is the inward pressure. When the fluid moves, those terms become nonzero.
 
@@ -103,106 +107,108 @@ But what if that were a layer of honey instead: now there is significant resista
 
 In this case, with honey being sheared between the two sliding pans (and the same pressure as before), our sigma term might instead be:
 
-```
-       [ −1.1×10⁵      −0.5×10⁵      −0.5×10⁵    ]
-σ  ≈   [ −0.5×10⁵      −1.1×10⁵      −0.5×10⁵    ]  Pa
-       [ −0.5×10⁵      −0.5×10⁵      −1.1×10⁵    ]
-```
+\[
+\boldsymbol{\sigma} \approx
+\begin{bmatrix}
+-1.1\times 10^5 & -0.5\times 10^5 & -0.5\times 10^5 \\
+-0.5\times 10^5 & -1.1\times 10^5 & -0.5\times 10^5 \\
+-0.5\times 10^5 & -0.5\times 10^5 & -1.1\times 10^5
+\end{bmatrix} \, \text{Pa}
+\]
 
 With this generalization of shear force included, we arrive at the full Cauchy momentum balance:
-```
-Cauchy Momentum Equation
+Cauchy Momentum Equation:
 
-∂(ρu)/∂t + ∇·(ρu⊗u)  =  ∇·σ + ρb
-```
+\[
+\frac{\partial (\rho \mathbf{u})}{\partial t} + \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u}) = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
+\]
 
 As an additional step, we can consolidate the inflow/outflow gradient term to be inside the derivative.
 
-```
-ρ [ ∂u/∂t + (u·∇)u ] = ∇·σ + ρb
+\[
+\rho \left[ \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla)\mathbf{u} \right] = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
+\]
 
-simplifies to the simplified Cauchy equation:
+which simplifies to the simplified Cauchy equation:
 
-ρ Du/Dt = ∇·σ + ρb
-```
+\[
+\rho \frac{D\mathbf{u}}{Dt} = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
+\]
 
 ## Final Steps to Navier-Stokes
 
 ### Viscous Forces
 
-We already saw that in the no-viscosity case, `σ` was simply set as `−pI`, and with the full Cauchy, `σ` does include the additional stress terms.
+We already saw that in the no-viscosity case, \(\boldsymbol{\sigma}\) was simply set as \(-p\mathbf{I}\), and with the full Cauchy, \(\boldsymbol{\sigma}\) does include the additional stress terms.
 
 In math, this can be shown as:
-```
-σ = −pI  +  σᵛ
-```
-where `I` is the identity matrix (think of it as multiplying by 1 but in 3D), and σᵛ is the term for the viscous forces only.
+\[
+\boldsymbol{\sigma} = -p\mathbf{I} + \boldsymbol{\sigma}^{v}
+\]
+where \(\mathbf{I}\) is the identity matrix (think of it as multiplying by 1 but in 3D), and \(\boldsymbol{\sigma}^{v}\) is the term for the viscous forces only.
 
 
-Next up though, we break down `σᵛ` into smaller terms that inform the forces actually involved. We do so as:
-```
-σᵛ  =  (some tensor constant) × (rate of deformation)
-```
+Next up though, we break down \(\boldsymbol{\sigma}^{v}\) into smaller terms that inform the forces actually involved. We do so as:
+\[
+\boldsymbol{\sigma}^{v} = (\text{some tensor constant}) \times (\text{rate of deformation})
+\]
 The tensor constant is the physical property, it only depends on what the fluid is that we're working with. Water has low viscosity while honey has high, so that tensor constant is higher for honey and it transfers more momentum across the fluid body for a given force.
 
 The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force. Let's further break down this rate term.
-```
-σᵛ = 2μE      +       λ(∇·u) I
-     ↑                   ↑
-   resists SHEARING      resists EXPANSION/compression
-   (shear viscosity μ)   (bulk viscosity λ)
-```
-As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: `μ` as the shear viscosity, and `λ` as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a *rapid* change in volume — internal friction during a fast squeeze, rather than stiffness against squeezing at all. (How hard a fluid is to squeeze in the first place is a separate property, set by its compressibility: a balloon full of air compresses easily, while a water balloon's volume stays fixed and any squeeze just moves the water around.)
+\[
+\boldsymbol{\sigma}^{v} =
+\underbrace{2\mu \mathbf{E}}_{\text{resists shearing (shear viscosity } \mu \text{)}}
++ \underbrace{\lambda (\nabla \cdot \mathbf{u})\mathbf{I}}_{\text{resists expansion/compression (bulk viscosity } \lambda \text{)}}
+\]
+As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a *rapid* change in volume — internal friction during a fast squeeze, rather than stiffness against squeezing at all. (How hard a fluid is to squeeze in the first place is a separate property, set by its compressibility: a balloon full of air compresses easily, while a water balloon's volume stays fixed and any squeeze just moves the water around.)
 
-Then, `E` and `(∇·u)` are simply the deformation rates. Faster sliding means higher E, and faster compression/expansion means higher magnitude of `(∇·u)`. More explicitly, to break down to simplest terms, E can be given as:
-```
-E = ½(∇u + ∇uᵀ)
-```
-to be in terms of the same velocity gradient `∇u` and its transpose `∇uᵀ` (from matrix algebra).
+Then, \(\mathbf{E}\) and \((\nabla \cdot \mathbf{u})\) are simply the deformation rates. Faster sliding means higher \(\mathbf{E}\), and faster compression/expansion means higher magnitude of \((\nabla \cdot \mathbf{u})\). More explicitly, to break down to simplest terms, \(\mathbf{E}\) can be given as:
+\[
+\mathbf{E} = \tfrac{1}{2} \left( \nabla \mathbf{u} + \nabla \mathbf{u}^{T} \right)
+\]
+to be in terms of the same velocity gradient \(\nabla \mathbf{u}\) and its transpose \(\nabla \mathbf{u}^{T}\) (from matrix algebra).
 
 Therefore, we arrive at:
 
-```
-σᵛ  =  2μE  +  λ(∇·u)I =  μ(∇u + ∇uᵀ)  +  λ(∇·u)I
-```
+\[
+\boldsymbol{\sigma}^{v} = 2\mu \mathbf{E} + \lambda(\nabla \cdot \mathbf{u})\mathbf{I} = \mu \left( \nabla \mathbf{u} + \nabla \mathbf{u}^{T} \right) + \lambda(\nabla \cdot \mathbf{u})\mathbf{I}
+\]
 
 ### Putting it all Together
 
-At this point, it's a pure algebra exercise, with the goal of simplifying everything down to the basic variables of density `ρ`, velocity `u`, and constants.
+At this point, it's a pure algebra exercise, with the goal of simplifying everything down to the basic variables of density \(\rho\), velocity \(\mathbf{u}\), and constants.
 
-First we take our new shear viscosity term `σᵛ` and apply the divergence operator, since that's where Cauchy has the `σ` (assuming the viscosities `μ` and `λ` are uniform — the same everywhere in the fluid):
-```
-∇·σᵛ = μ∇²u + μ∇(∇·u) + λ∇(∇·u)
-```
+First we take our new shear viscosity term \(\boldsymbol{\sigma}^{v}\) and apply the divergence operator, since that's where Cauchy has the \(\boldsymbol{\sigma}\) (assuming the viscosities \(\mu\) and \(\lambda\) are uniform — the same everywhere in the fluid):
+\[
+\nabla \cdot \boldsymbol{\sigma}^{v} = \mu \nabla^2 \mathbf{u} + \mu \nabla(\nabla \cdot \mathbf{u}) + \lambda \nabla(\nabla \cdot \mathbf{u})
+\]
 
 
-```
-ρ Du/Dt = ∇·σ + ρb
-
--->
-
-ρ Du/Dt = ∇·(−pI  +  σᵛ) + ρb
-
--->
-
-ρ Du/Dt = −∇p + μ∇²u + (λ + μ)∇(∇·u) + ρb
-```
+\[
+\begin{aligned}
+\rho \frac{D\mathbf{u}}{Dt} &= \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b} \\
+\implies \quad \rho \frac{D\mathbf{u}}{Dt} &= \nabla \cdot \left(-p\mathbf{I} + \boldsymbol{\sigma}^{v}\right) + \rho \mathbf{b} \\
+\implies \quad \rho \frac{D\mathbf{u}}{Dt} &= -\nabla p + \mu \nabla^2 \mathbf{u} + (\lambda + \mu) \nabla(\nabla \cdot \mathbf{u}) + \rho \mathbf{b}
+\end{aligned}
+\]
 
 And that's it! We've now arrived at the full Navier-Stokes equation governing fluid flow, all in terms of basic, measurable fluid properties.
 
-```
-Full Navier-Stokes (compressible fluid)
-ρ Du/Dt = −∇p + μ∇²u + (λ + μ)∇(∇·u) + ρb
-```
+Full Navier-Stokes (compressible fluid):
+
+\[
+\rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \mu \nabla^2 \mathbf{u} + (\lambda + \mu) \nabla(\nabla \cdot \mathbf{u}) + \rho \mathbf{b}
+\]
 
 We've touched on the simplifications across this derivation, but to show them together here as they'll often be applied to show as a simplified form:
-```
-Euler:              σᵛ = 0 (no viscous terms)
-ρ Du/Dt = −∇p + ρb
-
-Incompressible NS:  σᵛ = 2μE                (λ-term dead: ∇·u = 0)
-ρ Du/Dt = −∇p + μ∇²u + ρb
-```
+\[
+\begin{aligned}
+\text{Euler:} \quad & \boldsymbol{\sigma}^{v} = 0 \;\; (\text{no viscous terms}) \\
+& \rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \rho \mathbf{b} \\[1.5em]
+\text{Incompressible NS:} \quad & \boldsymbol{\sigma}^{v} = 2\mu \mathbf{E} \;\; (\lambda \text{-term dead: } \nabla \cdot \mathbf{u} = 0) \\
+& \rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \mu \nabla^2 \mathbf{u} + \rho \mathbf{b}
+\end{aligned}
+\]
 
 ## The 2026 Proposed Solution
 
