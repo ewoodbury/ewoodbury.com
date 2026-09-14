@@ -30,3 +30,10 @@ weight = 1
 [markup.goldmark.renderer]
   # Allow HTML in Markdown (enables <details> tags and other HTML elements)
   unsafe = true
+
+[markup.goldmark.extensions.passthrough]
+  enable = true
+
+  [markup.goldmark.extensions.passthrough.delimiters]
+    inline = [['\(', '\)']]
+    block = [['\[', '\]'], ['$$', '$$']]

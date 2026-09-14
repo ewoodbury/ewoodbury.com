@@ -1,0 +1,9 @@
+{{- $opts := dict "throwOnError" false -}}
+{{- if eq .Type "block" -}}
+    {{- $opts = merge $opts (dict "displayMode" true) -}}
+{{- end -}}
+{{- with transform.ToMath .Inner $opts -}}
+    {{ . }}
+{{- else -}}
+    <pre>{{ .Inner }}</pre>
+{{- end -}}

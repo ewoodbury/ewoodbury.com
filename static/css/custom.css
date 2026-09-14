@@ -150,3 +150,11 @@ main#content .post-header-image figcaption {
     opacity: 0.75;
     margin-top: 0.75rem;
 }
+
+main#content .katex:has(> math[display="block"]) {
+    display: block;
+    text-align: center;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
