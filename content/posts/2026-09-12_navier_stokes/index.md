@@ -42,11 +42,12 @@ Mass Balance (Compressible Fluid):
 
 Here, the \(\partial \rho / \partial t\) term is the "partial derivative" change (\(\partial\)) in density (\(\rho\)) over time (\(t\)). The divergence (\(\nabla \cdot\)) operator accounts for the possible density difference of flow in versus out. Then, the zero is unchanged to reflect conservation of mass.
 
-Annotated, this is: 
+Annotated, this is:
+
 \[
-\underbrace{\frac{\partial \rho}{\partial t}}_{\text{change inside}}
-  + \underbrace{\nabla \cdot (\rho \mathbf{u})}_{\text{carried by the flow}}
-  = \underbrace{0}_{\text{no way to create it}}
+\underbrace{\frac{\partial \rho}{\partial t}}_{\text{change inside}} +
+\underbrace{\nabla \cdot (\rho \mathbf{u})}_{\text{carried by the flow}} =
+\underbrace{0}_{\text{no way to create it}}
 \]
 
 
@@ -67,12 +68,13 @@ The second term is pressure in the fluid. A fluid is fully made up of particles 
 We simply express the net force as \(-\nabla p\) (note the minus sign: the force points from high pressure toward low), where \(\nabla\) (without the dot) is the gradient operator and means the change in all 3 dimensions. Simply having high versus low pressure doesn't make a difference; it's the net force due to the difference in pressures on different sides of the volume.
 
 At this point, we can put together the full momentum balance:
+
 Euler Momentum balance:
 
 \[
-\underbrace{\frac{\partial (\rho \mathbf{u})}{\partial t}}_{\text{change inside}}
-  + \underbrace{\rho (\mathbf{u} \cdot \nabla)\mathbf{u}}_{\text{carried by the flow}}
-  = \underbrace{-\nabla p + \rho \mathbf{b}}_{\text{created by forces}}
+\underbrace{\frac{\partial (\rho \mathbf{u})}{\partial t}}_{\text{change inside}} +
+\underbrace{\rho (\mathbf{u} \cdot \nabla)\mathbf{u}}_{\text{carried by the flow}} =
+\underbrace{-\nabla p + \rho \mathbf{b}}_{\text{created by forces}}
 \]
 (Note this can also be shown with the full outer product term \(\otimes\) or full partial differential equations in 3D.)
 
@@ -90,6 +92,7 @@ Now, note that pressure is the common way of thinking about forces in fluids; th
 
 
 In practical terms, \(\boldsymbol{\sigma}\) is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
+
 \[
 \boldsymbol{\sigma} \approx
 \begin{bmatrix}
@@ -142,6 +145,7 @@ which simplifies to the simplified Cauchy equation:
 We already saw that in the no-viscosity case, \(\boldsymbol{\sigma}\) was simply set as \(-p\mathbf{I}\), and with the full Cauchy, \(\boldsymbol{\sigma}\) does include the additional stress terms.
 
 In math, this can be shown as:
+
 \[
 \boldsymbol{\sigma} = -p\mathbf{I} + \boldsymbol{\sigma}^{v}
 \]
@@ -149,20 +153,23 @@ where \(\mathbf{I}\) is the identity matrix (think of it as multiplying by 1 but
 
 
 Next up though, we break down \(\boldsymbol{\sigma}^{v}\) into smaller terms that inform the forces actually involved. We do so as:
+
 \[
 \boldsymbol{\sigma}^{v} = (\text{some tensor constant}) \times (\text{rate of deformation})
 \]
 The tensor constant is the physical property, it only depends on what the fluid is that we're working with. Water has low viscosity while honey has high, so that tensor constant is higher for honey and it transfers more momentum across the fluid body for a given force.
 
 The rate of deformation is also intuitive: the faster you slide the two pans across the liquid, the greater the force. Let's further break down this rate term.
+
 \[
 \boldsymbol{\sigma}^{v} =
-\underbrace{2\mu \mathbf{E}}_{\text{resists shearing (shear viscosity } \mu \text{)}}
-+ \underbrace{\lambda (\nabla \cdot \mathbf{u})\mathbf{I}}_{\text{resists expansion/compression (bulk viscosity } \lambda \text{)}}
+\underbrace{2\mu \mathbf{E}}_{\text{resists shearing}} +
+\underbrace{\lambda (\nabla \cdot \mathbf{u})\mathbf{I}}_{\text{resists expansion/compression}}
 \]
 As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a *rapid* change in volume — internal friction during a fast squeeze, rather than stiffness against squeezing at all. (How hard a fluid is to squeeze in the first place is a separate property, set by its compressibility: a balloon full of air compresses easily, while a water balloon's volume stays fixed and any squeeze just moves the water around.)
 
 Then, \(\mathbf{E}\) and \((\nabla \cdot \mathbf{u})\) are simply the deformation rates. Faster sliding means higher \(\mathbf{E}\), and faster compression/expansion means higher magnitude of \((\nabla \cdot \mathbf{u})\). More explicitly, to break down to simplest terms, \(\mathbf{E}\) can be given as:
+
 \[
 \mathbf{E} = \tfrac{1}{2} \left( \nabla \mathbf{u} + \nabla \mathbf{u}^{T} \right)
 \]
@@ -179,6 +186,7 @@ Therefore, we arrive at:
 At this point, it's a pure algebra exercise, with the goal of simplifying everything down to the basic variables of density \(\rho\), velocity \(\mathbf{u}\), and constants.
 
 First we take our new shear viscosity term \(\boldsymbol{\sigma}^{v}\) and apply the divergence operator, since that's where Cauchy has the \(\boldsymbol{\sigma}\) (assuming the viscosities \(\mu\) and \(\lambda\) are uniform — the same everywhere in the fluid):
+
 \[
 \nabla \cdot \boldsymbol{\sigma}^{v} = \mu \nabla^2 \mathbf{u} + \mu \nabla(\nabla \cdot \mathbf{u}) + \lambda \nabla(\nabla \cdot \mathbf{u})
 \]
@@ -201,6 +209,7 @@ Full Navier-Stokes (compressible fluid):
 \]
 
 We've touched on the simplifications across this derivation, but to show them together here as they'll often be applied to show as a simplified form:
+
 \[
 \begin{aligned}
 \text{Euler:} \quad & \boldsymbol{\sigma}^{v} = 0 \;\; (\text{no viscous terms}) \\

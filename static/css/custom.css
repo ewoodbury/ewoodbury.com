@@ -151,6 +151,15 @@ main#content .post-header-image figcaption {
     margin-top: 0.75rem;
 }
 
+main#content .katex {
+    font-size: 1.05em;
+}
+
+main#content .katex math mi[mathvariant="bold"],
+main#content .katex math mi[mathvariant="bold-italic"] {
+    font-weight: 400;
+}
+
 main#content .katex:has(> math[display="block"]) {
     display: block;
     text-align: center;
