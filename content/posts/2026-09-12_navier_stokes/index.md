@@ -91,7 +91,7 @@ Next, we'll add in viscosity, which is shear (dragging) force of the fluid upon 
 Now, note that pressure is the common way of thinking about forces in fluids; the outside pressure is always pointed inward. In a more general sense, there can be sideways and diagonal forces on a volume of fluid. We use \(\boldsymbol{\sigma}\) for this tensor force instead of pressure \(p\).
 
 
-In practical terms, \(\boldsymbol{\sigma}\) is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1m depth is at ~1.1 atm of pressure, so:
+In practical terms, \(\boldsymbol{\sigma}\) is a field in 3-dimensions: in this no-shear case it is entirely determined by the pressure. Water at 1 meter depth is at ~1.1 atm of pressure, so:
 
 \[
 \boldsymbol{\sigma} \approx
@@ -160,7 +160,7 @@ The rate of deformation is also intuitive: the faster you slide the two pans acr
 \underbrace{2\mu \mathbf{E}}_{\text{resists shearing}} +
 \underbrace{\lambda (\nabla \cdot \mathbf{u})\mathbf{I}}_{\text{resists expansion/compression}}
 \]
-As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a *rapid* change in volume — internal friction during a fast squeeze, rather than stiffness against squeezing at all. (How hard a fluid is to squeeze in the first place is a separate property, set by its compressibility: a balloon full of air compresses easily, while a water balloon's volume stays fixed and any squeeze just moves the water around.)
+As mentioned above, this consists of shear forces (side-to-side) and normal forces (in and out), each of which has its own viscosity constant per fluid: \(\mu\) as the shear viscosity, and \(\lambda\) as the bulk viscosity. Again, shear is the sliding force: water versus honey. Bulk viscosity is a bit harder to visualize, but it is the resistance to a rapid change in volume: internal friction during a fast squeeze or expansion. (This is separate from compressiblity, which is the overall ability to change volume regardless of rate.)
 
 Then, \(\mathbf{E}\) and \((\nabla \cdot \mathbf{u})\) are simply the deformation rates. Faster sliding means higher \(\mathbf{E}\), and faster compression/expansion means higher magnitude of \((\nabla \cdot \mathbf{u})\). More explicitly, to break down to simplest terms, \(\mathbf{E}\) can be given as:
 
@@ -179,7 +179,7 @@ Therefore, we arrive at:
 
 At this point, it's a pure algebra exercise, with the goal of simplifying everything down to the basic variables of density \(\rho\), velocity \(\mathbf{u}\), and constants.
 
-First we take our new shear viscosity term \(\boldsymbol{\sigma}^{v}\) and apply the divergence operator, since that's where Cauchy has the \(\boldsymbol{\sigma}\) (assuming the viscosities \(\mu\) and \(\lambda\) are uniform — the same everywhere in the fluid):
+First we take our new shear viscosity term \(\boldsymbol{\sigma}^{v}\) and apply the divergence operator, since that's where Cauchy has the \(\boldsymbol{\sigma}\) (assuming the viscosities \(\mu\) and \(\lambda\) are uniform across the fuild):
 
 \[
 \nabla \cdot \boldsymbol{\sigma}^{v} = \mu \nabla^2 \mathbf{u} + \mu \nabla(\nabla \cdot \mathbf{u}) + \lambda \nabla(\nabla \cdot \mathbf{u})
@@ -219,9 +219,9 @@ Although I won't deeply analyze the Millennium Prize problem and solution itself
 
 The problem essentially asks the question: does Navier-Stokes hold up across all time-scales and length-scales, or does it break down under some sort of special conditions? In other words, do these equations result in an impossible infinite fluid velocity under some physical conditions?
 
-There were two dimensions of the problem under active research: without vs. with viscous forces (Euler equation vs. full N-S), with Buckmaster/Alpoge tackling Euler and OAI tackling full N-S. Second dimension is forced versus unforced, where forced means some external force is applied to the system to cause a perturbation in the fluid and cause the breakdown, and unforced goes without any external perturbation. I'm not familiar with the active research, but both Buckmaster/Alpoge and OAI tackled the forced setup, while unforced seemed to be the much more common current research area, and this fact was the major driver of the research privacy controversy.
+There were two dimensions of the problem under active research: without vs. with viscous forces (Euler equation vs. full N-S), with Buckmaster/Alpoge tackling Euler and OAI tackling full N-S. The second dimension is forced versus unforced, where forced means some external force is applied to the system to cause a perturbation in the fluid and cause the breakdown, and unforced goes without any external perturbation. I'm not familiar with the recent research, but both Buckmaster/Alpoge and OAI tackled the forced setup while unforced was the much more common current research area, and this fact was apparently the major driver of the research privacy controversy.
 
-Of course, it shouldn't be overlooked that any version of these solutions is a massive milestone for fluid dynamics and mathematics overall. I hope that this can be a spark for further mathematics research into related and new problems, and that it can be an opportunity for the wider world to get some insight and I dare say even enjoyment into this typically inaccessible field.
+These solutions are a massive milestone for fluid dynamics and mathematics overall. I hope that this can be a spark for further mathematics research into related and new problems, and that it can be an opportunity for the wider world to get some insight and I dare say even enjoyment into this typically inaccessible field.
 
 ## Wrap-up
 
