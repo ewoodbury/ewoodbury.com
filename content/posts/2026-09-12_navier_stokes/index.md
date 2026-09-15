@@ -11,7 +11,7 @@ We know the solution to another Millennium Prize problem! Navier-Stokes is the o
 
 This post covers the Navier Stokes equations themselves; I don't cover the contributions of Buckmaster/Alpoge or OpenAI here yet.
 
-I wrote this to be accessible to anyone with basic physics and algebra knowledge, as it grounds the entire equation in physical intuition. I include the full math too, but you should be able to skim the equations and still understand the meaning. To fully grasp the math, you'll need familiarity partial differential equations, gradient and divergence, and basic linear algebra (matrix math).
+I wrote this to be accessible to anyone with basic physics and algebra knowledge. I still include the full math too, as that's what exposes you the the real equations, but you should be able to skim them and still understand the physical meaning. To fully grasp the math, you'll need familiarity partial differential equations, gradient and divergence, and basic linear algebra (matrix math).
 
 ---
 
@@ -19,9 +19,9 @@ Fluid dynamics is the study of forces on a continuous mass (liquids and gasses),
 
 ## Mass Balance
 
-A key concept to be familiar with is that of the physical laws of conservation. Mass is conserved in that it's neither created nor destroyed (ignoring relativity), whether dealing with discrete objects or fluids. Mass inside a closed system is constant, because nothing can flow in or out. In an open system though, we can describe the change in mass simply by writing a "balance", which simply accounts for what flows in versus what flows out.
+The key concepts to know are the physical laws of conservation, and how we can use that to build a balance. We'll start by tracking the volume of an incompressible fluid like water (not truly incompressible but close enough for today). Within an open container, and assuming no chemical reactions or phase changes, water can never be created nor destroyed.
 
-In words, for a given volume, our balance is simply: `( net inflow )  +  ( net outflow )  =  0`. In math, it's simply \(\nabla \cdot \mathbf{u} = 0\), where \(\mathbf{u}\) is what we use for velocity, and \(\nabla \cdot\) is the divergence operator and essentially means the total outward change in volume, summed across all 3 dimensions. For an incompressible fluid like water, density is constant, so this is the same as the mass balance.
+Thus to track water volume, we build a simple balance, which tracks quantity changes against a known conserved constant. In words, our balance is `( net inflow )  +  ( net outflow )  =  0`, where zero is the consant saying volume is conserved. In math, that balance is \(\nabla \cdot \mathbf{u} = 0\), where \(\mathbf{u}\) is what we use for velocity, and \(\nabla \cdot\) is the divergence operator and essentially means the total outward change in volume, summed across all 3 dimensions.
 
 Volume Balance:
 
@@ -29,9 +29,9 @@ Volume Balance:
 \nabla \cdot \mathbf{u} = 0
 \]
 
-This is intuitive: if you hold a straw in a flowing stream, the amount of water in it is always constant, as the volume of water flowing in is exactly equal to the volume flowing out.
+In physical terms, this is intuitive: if you hold a straw in a flowing stream, the amount of water in it is always constant, as the volume of water flowing in is exactly equal to the volume flowing out.
 
-Now, if instead of water, what if we're dealing with air, which is compressible? If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since it's a constant control volume, we divide by the volume to track change in density (\(\rho\)) instead:
+Now, if instead of water, let's handle a compressible fluid like air. If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since it's a constant control volume, we divide by the volume to track change in density (\(\rho\)) instead:
 
 Mass Balance:
 
@@ -39,7 +39,7 @@ Mass Balance:
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{u}) = 0
 \]
 
-Here, the \(\partial \rho / \partial t\) term is the "partial derivative" change (\(\partial\)) in density (\(\rho\)) over time (\(t\)). The divergence (\(\nabla \cdot\)) operator accounts for the possible density difference of flow in versus out. Then, the zero is unchanged to reflect conservation of mass.
+Here, the \(\partial \rho / \partial t\) term is the "partial derivative" change (\(\partial\)) in density (\(\rho\)) over time (\(t\)). The divergence (\(\nabla \cdot\)) operator accounts for the possible density difference of flow in versus out. Again, the zero reflects conservation of mass.
 
 Annotated, this is:
 
@@ -52,11 +52,11 @@ Annotated, this is:
 
 ## Momentum Balance (Euler Equation)
 
-The other conservation quantity is momentum: we construct a similar momentum balance to track the effect of forces on the fluid's properties. 
+Mass balances are easy to visualize and understand, but momentum is another quantity which is conserved. We'll use that property to build a momentum balance, and this is the foundation that will actually build up to Navier-Stokes.
 
-Recall that momentum is `mass * velocity`, yet we divide by a constant volume to track in terms of density instead. So we'll make the balance on the momentum term \(\rho \mathbf{u}\).
+You might remember from basic physics that momentum is `mass * velocity`, and mass is `density * volume`. We'll assume a constant volume throughout this example (a control volume), so we divide by the constant volume to track momentum in terms of density instead. Therefore we'll balance on the momentum term \(\rho \mathbf{u}\).
 
-For inflows and outflows, we again track the changes at the edge of the container. Here that term is \((\mathbf{u} \cdot \nabla)\mathbf{u}\).
+For momentum inflows and outflows, we again track the changes at the edge of the container, just like for mass. Here that term is \((\mathbf{u} \cdot \nabla)\mathbf{u}\).
 
 The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law and \(F = ma\)).
 
@@ -214,6 +214,22 @@ We've touched on the simplifications across this derivation, but to show them to
 & \rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \mu \nabla^2 \mathbf{u} + \rho \mathbf{b}
 \end{aligned}
 \]
+
+The whole derivation, end to end, all built from the basic momentum balance:
+
+```mermaid
+flowchart TD
+    A["Momentum balance<br/>∂(ρu)/∂t + ρ(u·∇)u = forces"]
+    B["Mass balance<br/>∂ρ/∂t + ∇·(ρu) = 0"]
+    C["Cauchy momentum<br/>ρ Du/Dt = ∇·σ + ρb<br/><i>σ: push force</i>"]
+    D["Euler equation<br/>ρ Du/Dt = −∇p + ρb"]
+    E["Navier-Stokes<br/>ρ Du/Dt = −∇p + μ∇²u + (λ+μ)∇(∇·u) + ρb"]
+
+    A -->|"Contact forces σ"| C
+    B --> C
+    C -->|"σ = −pI<br/>(push only, no shear)"| D
+    C -->|"σ = −pI + 2μE + λ(∇·u)I<br/>(push + drag)"| E
+```
 
 ---
 
