@@ -1,18 +1,16 @@
 ---
 title: "Navier-Stokes: A Gentle Introduction"
-date: 2026-09-14
+date: 2026-09-15
 draft: false
 headerImage: "navier-stokes-light.png"
 headerAlt: "Vortex filaments in blue, teal, and gold spiraling around a vertical vorticity axis"
 ---
 
-It was particularly exciting to see the Navier-Stokes equations get a proposed solution last week. My background is Chemical Engineeering, so it was fun to see something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fuel such controversy on X and elsewhere.
-
-Despite the controversy, one thing which shouldn't be missed is we know the solution to another Millennium Prize problem! Particularly so, with Navier-Stokes being the problem with the most connection to the physical world. This is the one Millennium problem that a person with light math background has a chance to fully understand, at least for the raw equations themselves. I took the opportunity to refamiliarize myself with this math, and to put together an approachable introduction for anyone wanting to build an intuitive understanding. 
-
-I wrote this to be accessible to anyone with basic physics and algebra knowledge, as it grounds the entire equation in physical intuition. I include the full mathematical context too, but you should be able to skim this and still understand the equations fully. To grasp the math, you'll need some understanding of partial differential equations, gradient and divergence, and basic linear algebra (basic matrix math).
+We know the solution to another Millennium Prize problem! Navier-Stokes is the one problem with the most connection to the physical world; it's probably the problem that anyone has at least a chance to fully understand, at least for the raw equations themselves. I took the opportunity to refamiliarize myself with this math, and to put together an introduction for anyone wanting an intuitive understanding. 
 
 This post covers the Navier Stokes equations themselves; I don't cover the contributions of Buckmaster/Alpoge or OpenAI here yet.
+
+I wrote this to be accessible to anyone with basic physics and algebra knowledge, as it grounds the entire equation in physical intuition. I include the full math too, but you should be able to skim the equations and still understand the meaning. To fully grasp the math, you'll need familiarity partial differential equations, gradient and divergence, and basic linear algebra (matrix math).
 
 ---
 
@@ -225,4 +223,6 @@ These solutions are a massive milestone for fluid dynamics and mathematics overa
 
 ## Wrap-up
 
-In my opinion this is an elegant derivation, in that it does not depend on any esoteric concepts, mathematical constructions, or 4+ dimensional systems. Every single term has a true physical analogue that anyone could visualize. Yet despite the simplicity, it builds a governing equation that can be the subject of study of both engineering and pure math for hundreds of years. It also feels stunning to me that only in 2026, have we found the true limits of where this equation can be applied.
+In my opinion this is an elegant derivation, in that it does not depend on any esoteric concepts, mathematical constructions, or 4+ dimensional systems. Every single term has a true physical analogue that anyone could visualize. Yet despite the simplicity, it builds a governing equation that can be the subject of study of both engineering and pure math for decades. It also feels stunning to me that only in 2026, have we found the true limits of where this equation can be applied.
+
+My background is Chemical Engineeering, so it was fun to see something I spent a meaningful fraction of my life studying, suddenly becoming front page news and fuel such controversy on X and elsewhere. At this point, it's inevitable that frontier math discovery will be dominated by AI. I think it's a minor tragedy that in all likelihood, only one Millenium Prize problem will have ever been solved end-to-end by a human mind. Yet, as I hope you saw here, math can truly be a beautiful form to describe the natural world, and I hope this is a small push toward sharing that beauty.
