@@ -58,9 +58,9 @@ You might remember from basic physics that momentum is `mass * velocity`, and ma
 
 For momentum inflows and outflows, we again track the changes at the edge of the container, just like for mass. Here that term is \((\mathbf{u} \cdot \nabla)\mathbf{u}\).
 
-The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law and \(F = ma\)).
+The last term accounts for the change in momentum from forces. Unlike mass, momentum in the volume can also change without anything flowing across the boundary. Any such momentum change must come from an applied force (from Newton's 2nd Law \(F = ma\)).
 
-For fluids, the momentum from external forces is split into two terms. The first is body forces, expressed as \(\rho \mathbf{b}\). \(\rho\) is still density, and \(b\) is simply the force per unit mass, which we can typically take as gravity (\(9.8\,\text{m/s}^2\)). This term is exactly the same as for a rigid body (\(F_{\text{gravity}} = mg\)) since gravity acts the same on both.
+For fluids, the momentum from external forces is split into two terms. The first is body forces, expressed as \(\rho \mathbf{b}\). \(\rho\) is still density, and \(b\) is simply the force per unit mass, which we take as gravity (\(9.8\,\text{m/s}^2\)). This term is exactly the same as for a rigid body (\(F_{\text{gravity}} = mg\)) since gravity acts the same on both.
 
 The second term is pressure in the fluid. A fluid is fully made up of particles constantly colliding with each other, with each collision exerting a force. From Newton's 3rd law, every force has an equal and opposite reaction, so all collisions cancel out forces in pairs. The only forces not cancelled are those at the edges, from forces coming from outside of the control volume. 
 
@@ -82,7 +82,7 @@ In words, the momentum change inside the volume plus the momentum change from in
 
 Therefore, we have analogous balances for both mass and momentum now, all descending from the basic laws of physics. These are the basic building blocks from which Navier Stokes is built.
 
-At this point, we have an incredibly useful governing equation for both applications with low viscosity fluids (airflow, weather, flow through pipes) and for setting a foundation for mathematical explorations. In fact, this was the equation attacked by the team of Buckmaster + Alpoge in their recent research.
+At this point, we already have an incredibly useful governing equation in Euler, both for real applications inf luids (airflow, weather, flow through pipes), and for mathematical explorations. In fact, Euler was the equation attacked by the team of Buckmaster + Alpoge in their recent research.
 
 Next, we'll add viscosity, which is shear (dragging) force of the fluid upon itself, such as when spreading honey.
 
@@ -106,9 +106,9 @@ If pressure doubles, those values double as well. But the non-diagonal terms whi
 
 Still, in low-viscosity fluids this shear force from movement is small. Imagine putting a layer of water between two flat baking pans and sliding them past each other: there is very little resistance even though the water is moving.
 
-But what if that were a layer of honey instead: now there is significant resistance to sliding the two pans. This is because honey has viscosity: it conducts the shear forces within itself and thus resists a change in momentum even when under the same force.
+But what if that were a layer of honey instead: now there is significant resistance to sliding the two pans. This is because honey has viscosity: it conducts the shear forces within itself and thus resists a change in momentum even when under the same force (although this shear force is ~100x less than the inward pressure force).
 
-In this case, with honey being sheared between the two sliding pans (and the same pressure as before), our sigma term might instead be:
+In this case, with honey being sheared between the two sliding pans, our sigma term might instead be:
 
 \[
 \boldsymbol{\sigma} \approx
