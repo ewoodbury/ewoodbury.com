@@ -1,7 +1,8 @@
 ---
 title: "Navier-Stokes: A Gentle Introduction"
-date: 2026-09-15
-draft: false
+date: 2026-09-12
+draft: true
+url: "/posts/navier-stokes/"
 headerImage: "navier-stokes-light.png"
 headerAlt: "Vortex filaments in blue, teal, and gold spiraling around a vertical vorticity axis"
 ---
