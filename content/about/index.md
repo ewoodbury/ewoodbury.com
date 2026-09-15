@@ -2,7 +2,7 @@
 title: "About"
 ---
 
-I currently work on the Data Platform team at xAI and X, where I lead development of the batch processing platform. We power data preparation for Grok pretraining and posttraining, product data analysis, and much more. On the X side, my team runs the infra for X ads, recommendation systems, and product analytics.
+I currently work on the Data Infra team at xAI and X. We power data processing for Grok pretraining/midtraining/posttraining, SFT, Grok product data analysis, and much more. We also run data infra for all of X (Twitter), including ads, recommendation systems, backend core services, and product analytics.
 
 Before xAI, I worked on Tesla's Cell Manufacturing team, where I led a team that built software to enable more efficient manufacturing operations. My team ran the data platform reponsible for [factory reporting](https://x.com/Tesla/status/1798472011678966221) and [financial tracking](https://electrek.co/2024/04/24/tesla-expects-4680-battery-cells-cheaper-than-suppliers-end-of-year/). 
 
@@ -12,7 +12,7 @@ My technical strengths include distributed data processing (Spark and Ray), anal
 
 I studied Chemical Engineering at UC Berkeley. While there, I research high-capacity, nickel-rich battery cathodes at Berkeley Lab and Tesla.
 
-Outside of work, I've been spending time on functional programming, type systems, testing theory, and even a bit of formal methods (particularly Lean). I've been working on a [project](https://github.com/ewoodbury/sparklet) to rebuild Spark core from scratch in functional Scala 3.
+Outside of work, I've been spending time on functional programming, programming languages, type systems, and testing theory. I've been working on a [project](https://github.com/ewoodbury/sparklet) to rebuild Spark core from scratch in functional Scala 3.
 
 ## Links
 
