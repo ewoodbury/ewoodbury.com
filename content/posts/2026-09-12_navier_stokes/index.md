@@ -1,8 +1,8 @@
 ---
 title: "Navier-Stokes: A Gentle Introduction"
-date: 2026-09-12
+date: 2026-09-15
 draft: false
-url: "/posts/navier-stokes/"
+url: "/navier-stokes/"
 headerImage: "navier-stokes-light.png"
 headerAlt: "Vortex filaments in blue, teal, and gold spiraling around a vertical vorticity axis"
 ---
@@ -19,11 +19,11 @@ Fluid dynamics is the study of forces on a continuous mass (liquids and gasses),
 
 ## Mass Balance
 
-Before we get to the full equations, the key concept to be familiar with is that of the physical laws of conservation. It's obvious that mass is conserved (ignoring relativity), whether dealing with discrete objects or our continuous case with fluids. Mass inside a closed system is conserved, because nothing can flow in or out. In an open system though, we can describe the change in mass simply by writing a "balance", which simply accounts for what flows in versus what flows out. (Note I'm starting by assuming an incompressible fluid like water, which can be approximated as incompressible).
+A key concept to be familiar with is that of the physical laws of conservation. Mass is conserved in that it's neither created nor destroyed (ignoring relativity), whether dealing with discrete objects or fluids. Mass inside a closed system is constant, because nothing can flow in or out. In an open system though, we can describe the change in mass simply by writing a "balance", which simply accounts for what flows in versus what flows out.
 
 In words, for a given volume, our balance is simply: `( net inflow )  +  ( net outflow )  =  0`. In math, it's simply \(\nabla \cdot \mathbf{u} = 0\), where \(\mathbf{u}\) is what we use for velocity, and \(\nabla \cdot\) is the divergence operator and essentially means the total outward change in volume, summed across all 3 dimensions. For an incompressible fluid like water, density is constant, so this is the same as the mass balance.
 
-Volume Balance (Incompressible fluid):
+Volume Balance:
 
 \[
 \nabla \cdot \mathbf{u} = 0
@@ -31,9 +31,9 @@ Volume Balance (Incompressible fluid):
 
 This is intuitive: if you hold a straw in a flowing stream, the amount of water in it is always constant, as the volume of water flowing in is exactly equal to the volume flowing out.
 
-Now, if instead of water, what if we're dealing with air, which is compressible? If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since we're keeping a constant control volume, we divide by the volume to track change in density (\(\rho\)) instead:
+Now, if instead of water, what if we're dealing with air, which is compressible? If you hold a straw in a stream of air, and a large gust blows through it, then for an instant there is more mass of air in the straw. We account for this by adding a density term. The mass balance still holds since no mass is created or destroyed; it just now tracks the change of mass over time inside the volume. Since it's a constant control volume, we divide by the volume to track change in density (\(\rho\)) instead:
 
-Mass Balance (Compressible Fluid):
+Mass Balance:
 
 \[
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{u}) = 0
@@ -74,6 +74,7 @@ Euler Momentum balance:
 \underbrace{\frac{\partial (\rho \mathbf{u})}{\partial t}}_{\text{change inside}} +
 \underbrace{\rho (\mathbf{u} \cdot \nabla)\mathbf{u}}_{\text{carried by the flow}} =
 \underbrace{-\nabla p + \rho \mathbf{b}}_{\text{created by forces}}
+\tag{$\star$}
 \]
 (Note this can also be shown with the full outer product term \(\otimes\) or full partial differential equations in 3D.)
 
@@ -81,9 +82,9 @@ In words, the momentum change inside the volume plus the momentum change from in
 
 Therefore, we have analogous balances for both mass and momentum now, all descending from the basic laws of physics. These are the basic building blocks from which Navier Stokes is built.
 
-At this point, we've already arrived at an incredibly useful governing equation for both applications with low viscosity fluids (airflow, weather, flow through pipes) and for setting a foundation for mathematical explorations. In fact, this was the equation attacked by the team of Buckmaster + Alpoge in their recent research.
+At this point, we have an incredibly useful governing equation for both applications with low viscosity fluids (airflow, weather, flow through pipes) and for setting a foundation for mathematical explorations. In fact, this was the equation attacked by the team of Buckmaster + Alpoge in their recent research.
 
-Next, we'll add in viscosity, which is shear (dragging) force of the fluid upon itself, such as when spreading honey.
+Next, we'll add viscosity, which is shear (dragging) force of the fluid upon itself, such as when spreading honey.
 
 ## Shear Forces (Cauchy momentum)
 
@@ -112,9 +113,9 @@ In this case, with honey being sheared between the two sliding pans (and the sam
 \[
 \boldsymbol{\sigma} \approx
 \begin{bmatrix}
--1.1\times 10^5 & -0.5\times 10^5 & -0.5\times 10^5 \\
--0.5\times 10^5 & -1.1\times 10^5 & -0.5\times 10^5 \\
--0.5\times 10^5 & -0.5\times 10^5 & -1.1\times 10^5
+-1.1\times 10^5 & -0.5\times 10^3 & -0.5\times 10^3 \\
+-0.5\times 10^3 & -1.1\times 10^5 & -0.5\times 10^3 \\
+-0.5\times 10^3 & -0.5\times 10^3 & -1.1\times 10^5
 \end{bmatrix} \, \text{Pa}
 \]
 
@@ -123,6 +124,7 @@ Cauchy Momentum Equation:
 
 \[
 \rho \left[ \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla)\mathbf{u} \right] = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}
+\tag{$\star$}
 \]
 
 which, using the material derivative `D/Dt` from the Euler section, simplifies to the compact Cauchy equation:
@@ -199,6 +201,7 @@ Full Navier-Stokes (compressible fluid):
 
 \[
 \rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \mu \nabla^2 \mathbf{u} + (\lambda + \mu) \nabla(\nabla \cdot \mathbf{u}) + \rho \mathbf{b}
+\tag{$\star$}
 \]
 
 We've touched on the simplifications across this derivation, but to show them together here as they'll often be applied to show as a simplified form:
@@ -211,6 +214,8 @@ We've touched on the simplifications across this derivation, but to show them to
 & \rho \frac{D\mathbf{u}}{Dt} = -\nabla p + \mu \nabla^2 \mathbf{u} + \rho \mathbf{b}
 \end{aligned}
 \]
+
+---
 
 ## The 2026 Proposed Solution
 
