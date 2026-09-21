@@ -20,3 +20,5 @@ Outside of work, I enjoy learning about functional programming, programming lang
 - <a href="https://x.com/etmwo" target="_blank" rel="noopener">X</a>
 - [LinkedIn](https://www.linkedin.com/in/ethan-woodbury/)
 - [BatteryCost.me](https://www.batterycost.me) - An application for modeling the cost of lithium-ion batteries
+
+This site uses [GoatCounter](https://www.goatcounter.com/) for privacy-friendly analytics. It does not use cookies or collect personal data.

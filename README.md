@@ -8,3 +8,5 @@ Personal site and blog
 - In the `/themes` directory, run `git clone https://github.com/mfg92/hugo-shortcode-gallery.git` to copy the library for rendering the photo gallery.
 
 - Run `hugo server`. Open `localhost:1313` to view the site.
+
+- Production builds include GoatCounter (`params.goatcounter.code` in `config.toml`). The dashboard is at `https://<code>.goatcounter.com`. Leave `code` empty to disable the snippet.

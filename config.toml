@@ -19,6 +19,9 @@ theme = ["etch", "hugo-shortcode-gallery"]
     name = "Ethan Woodbury"
     email = "ethwoodbury@gmail.com"
 
+  [params.goatcounter]
+    code = "ewoodbury"
+
 [imaging.exif]
     includeFields = ".*"
 
