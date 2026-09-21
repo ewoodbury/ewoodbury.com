@@ -1,17 +1,23 @@
 ---
-title: "Reviving a 9-year-old laptop with Linux and hardware"
-date: 2026-09-20
-draft: true
+title: "Reviving a 9-year-old laptop with Linux and new hardware"
+date: 2026-09-21
+draft: false
 url: "/laptop-revival/"
-# headerImage: ".png"
-# headerAlt: ""
+headerImage: "cachyos-grok-terminal.png"
+headerAlt: "CachyOS terminal running fastfetch next to a Grok agent window"
 ---
 
 I have a 2017 HP Pavilion 15-cc6xx, with an Intel i7-8550U (8th-gen) and 12GB RAM. This machine has been through a lot: it's what got me through my last 3 years of my Chemical Engineering degree, plus my first internship and job searches. I had replaced it with a Macbook Pro M1 back in 2022, so the HP has been sitting collecting dust for 5 years now!
 
 I had actually tried out Linux before on a very old laptop while back in high school; it didn't go great as the hardware was even worse, I set it as dual-boot to keep Windows which caused problems, but most of all I just didn't keep at it long enough to get it to a great state.
 
-This time around, I did a bit more research upfront, but most importantly, coding agents exist now! I do a lot of compute cluster and infra work at work now, and LLMs/agents have of course completely changed the game from Googling and searching through forums to simply asking the agent. I know Linux has a similar problem profile of fiddly config knobs, so with agents it seemed like a great new opportunity to try it out. Spoiler - it went great! I've since been using Linux on the HP for a month now, for some personal projects, open-source work, and to type this and my previous blog post. 
+This time around, I did a bit more research upfront, but most importantly, coding agents exist now! I do a lot of compute cluster and infra work at work now, and agents have changed the game from Googling and searching through forums to simply asking the agent. Linux has a similar problem profile of fiddly config knobs, so with agents it seemed like a great new opportunity to try it out. It led me to some hardware upgrades as well. Spoiler - it went great!
+
+Final results:
+- 45% shorter app startup times 
+- 61% faster browser performance
+- ~3x faster sequential read/write speeds, ~49x faster random read latency
+- ~3x longer battery life
 
 ---
 
@@ -24,9 +30,14 @@ The CachyOS install itself was mostly uneventful. I opted to do a full wipe of t
 - Downloaded the CachyOS ISO onto a spare 32GB USB drive
 - Booted the HP into the BIOS menu
 - Disabled HP Secure Boot, then rebooted into BIOS again (CachyOS seemed to not support Secure Boot at least for my HP)
-- Selected to boot Cachy from the USB
-- Once booted into CachyOS in RAM, followed the installer to wipe the disk fully, create a fresh partition for only Linux, and install CachyOS into there
-- Rebooted one last time, to finally get into the fresh disk install of CachyOS
+- Selected to boot CachyOS from the USB
+- Once booted into CachyOS in RAM (screenshot below), followed the installer to wipe the disk fully and installed CachyOS into there
+
+![CachyOS Hello welcome screen in the live USB install environment](cachyos-welcome.png)
+
+- Rebooted one last time, to finally get into the fresh disk install of CachyOS with my selected desktop environment (Xfce)
+
+![The installed CachyOS Xfce desktop](cachyos-desktop.png)
 
 I had a couple hiccups to figure it all out, including identifying Secure Boot as the reboot issue and getting the disk partitions right in the installer. But I was able to have an LLM walk me through the main steps and help me get unstuck at each stage.
 
@@ -68,7 +79,7 @@ After reboot, the OS was still installed only on the HDD. I asked Grok Build to 
   <img src="ssd-after.jpg" alt="Timetec M.2 SATA SSD installed" />
 </div>
 
-Once booted onto the SSD, I was legitimately shocked at how much snappier everything is. Ghostty started in <1 second! Firefox in <2! I have a habit of constantly using Alt-Tab to switch across windows, and Ctrl + Space to open the App Finder, and those both seem to literally load instantly which makes a massive difference in OS feel. It blows my mind that I just accepted this sluggish performance on the HDD for my college years, using this for everything from Matlab projects to Python data analysis to [Aspen HYSYS](https://www.aspentech.com/en/products/engineering/aspen-hysys) (extremely heavyweight processing engineering modelling software, no idea how was able to run).
+I was shocked at how much snappier everything was on SSD. Ghostty started in one second! Firefox in under two! I constantly using Alt-Tab to switch across windows, and Ctrl + Space to open App Finder, and those both seem to literally load instantly which makes a massive difference in OS feel. It blows my mind that I just accepted the slow HDD performance for so long, using it for Matlab projects to Python data analysis to [Aspen HYSYS](https://www.aspentech.com/en/products/engineering/aspen-hysys) (heavyweight modelling software).
 
 The HDD is still installed and holds the stale OS copy. I plan to wipe the OS there and then use the HDD as bulk storage, as it's a full 1TB of good functional storage, but I haven't gotten around to that yet.
 
@@ -80,9 +91,9 @@ For actual performance benchmarks, I did have the foresight to record some numbe
 
 The other hardware issue I figured out from Grok Build was the battery. I had always accepted that this HP laptop had terrible battery life; I broght the charging brick everywhere during school, and I memorized dozens of study spots across campus with outlet access. Anything more than a 1-2 hour study period and I knew the laptop battery wouldn't make it. 
 
-The agent started out measuring average power draw around 5W, with heavy use going up to ~8-10W. With the design energy of 42Wh, and assuming a conservative 50-60% battery state of health after many years, that should be giving around 3 hours of mixed use battery life. But still, I was finding myself lucky to get even 1.5 hours, which measured up to ~15-20Wh of energy. Low and behold, the design capacity was being reported to the firmware as only 15.5Wh! Even on an old battery, this design capacity should report as the designed 42Wh. After a bit more debugging here, I'm still not 100% sure if the original battery was counterfeit (seems unlikely given the laptop was ordered from Costco), or if the battery just had major degradation and somehow had the capacity reproting reset maybe due to the OS switch. But it was clear a battery update was due if I wanted battery life to be reasonable.
+The agent started out measuring average power draw around 5W, with heavy use going up to ~8-10W. With the design energy of 42Wh, and assuming a conservative 50-60% battery state of health after many years, that should be giving around 3 hours of mixed use battery life. But still, I was finding myself lucky to get even 1.5 hours, which measured up to ~15-20Wh of energy. It turns out the design capacity was being reported to the firmware as only 15.5Wh! Even on an old battery, this design capacity should show 42Wh. I'm still not 100% sure if the original battery was counterfeit (seems unlikely given the laptop was ordered from Costco), or if the battery just had major degradation and somehow had the capacity reproting reset maybe due to the OS switch. But it was clear a battery update was due if I wanted the laptop to be portable at all.
 
-Again, I ordered a new replacement online - a TF03XL part number pouch cell battery, and I chose one sold by brand GHU for $33, since it seemed to have good reviews and a legit website with many battery models for sale. It came in, I cracked open the cover again, and I replace the battery itself.
+Again, I ordered a new replacement online: a TF03XL part number pouch cell battery, and I chose one sold by brand GHU for $33, since it seemed to have good reviews and a legit website. It came in, I cracked open the cover again, and I replaced the battery itself.
 
 ![New GHU TF03XL battery installed](battery-installed.jpg)
 
@@ -118,6 +129,14 @@ All before/after numbers measured with identical methodology (fio direct I/O, `s
 | Thunar | 85.8 ms | 31.1 ms | 2.8x |
 | Ghostty | 78.0 ms | 42.7 ms | 1.8x |
 
+**Browser benchmark (Speedometer 3.1):**
+
+| Machine | Score |
+|---|---:|
+| HP Pavilion (Windows, before) | 5.68 |
+| HP Pavilion (CachyOS, after) | 9.18 |
+| MacBook Pro M1 (reference) | 19.6 |
+
 **Battery:**
 
 | Metric | Old battery | New battery |
@@ -125,8 +144,12 @@ All before/after numbers measured with identical methodology (fio direct I/O, `s
 | Reported design capacity | 15.5 Wh (misreported) | 43.98 Wh |
 | Gauge-learned full capacity | - | 42.87 Wh |
 | Measured delivered energy (100% to 10%) | - | 37.24 Wh |
-| Estimated true capacity | ~15-20 Wh | ~41.7 Wh |
-| Runtime, mixed use | ~1.5 h | 6+ h |
+| Estimated true capacity | ~15 Wh | ~41.7 Wh |
+| Runtime, mixed use | ~2 h | 6+ h |
 
 
 ## Conclusion
+
+Again, I'm incredibly pleased with the results here, and I've since been using this laptop as my daily driver. I have a few other projects I'm working on, but at some point I think it would be interesting to dip my toes into the distro development community too. If you're interested at all in OSes, customization, or just free (as in speech + beer) software, I'd highly recommend dusting off that old laptop you have around and giving it a try.
+
+![CachyOS terminal with fastfetch next to the Grok agent window](cachyos-grok-terminal.png)
