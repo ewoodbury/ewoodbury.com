@@ -35,9 +35,20 @@ In the CachyOS installer, it also prompts to pick a desktop environment. After a
 
 ## Linux Configuration and the Frozen Screen of Death
 
-As I started to use CachyOS, one issue kept popping up, roughly every 2-4 hours, which is the screen would freeze and all input became unresponsive. The only fix was to do a hard reboot with the power button.
+One issue started popping up as I used CachyOS: every couple of hours, the screen would freeze on its last frame and all input would go dead. It was a wedge rather than a regular OS crash: no OOM, no thermal event in the logs; the journal just stopped mid-line. The kernel never even got far enough to panic, and the only recovery from the freeze was a hard power-off.
 
-This was a very tricky issue; I took a lot of time trying to understand and reproduce the issue with trying different apps, messing with display/brightness settings, switching to the cachyos-lts os boot kernel, disabling Wi-Fi power saving, and ... I even ran a full 2-hour memtest suite, to verify the memory sticks had no faults tripping up the OS. Finally, I switched off the Xfce compositor with `...`, and that fixed it. I haven't had an issue with freezing since then.
+A few things I tried:
+
+- Switched to the LTS kernel - froze anyway, ruling out a regression in the CachyOS-tuned kernel
+- Ran two full memtest86+ passes with zero errors - my mismatched 4GB + 8GB RAM sticks were the top suspect, but they were cleared
+- Disabled WiFi power saving - froze anyway
+- Checked disk health with SMART - clean
+
+The real break was circumstantial: I (with Grok help) noticed several freezes hit seconds after the screensaver unlocked or the display woke up. Following that thread, I found a kernel worker, `kworker/u33:3+i915_flip`, stuck in uninterruptible sleep (D state) for 20+ minutes with no corresponding error in the kernel log. That worker exists to service display page-flips, which pointed to the i915 graphics driver.
+
+Disabling Panel Self-Refresh (`i915.enable_psr=0`, an apparently flaky feature on this gen of Intel iGPUs) and display C-states (`i915.enable_dc=0`) on the kernel command line was the first big win, as it dropped the freeze frequency to every few days.
+
+The final fix ended up being simple: turning off the Xfce compositor with `xfconf-query -c xfwm4 -p /general/use_compositing -s false`. The frozen `i915_flip` worker disappeared, rendering stayed hardware-accelerated, and there hasn't been a display freeze since. The compositor's page-flip path simply seems to hit some edge case and cause the worker wedge on this old GPU.
 
 What I'd call out here is the lingering edge cases in setting up Linux on an old laptop; this kind of issue would have killed the whole project if I were lazier or didn't have coding agents. The only reason I knew to try any of these potential fixes was that I could simply ping Grok to check my system logs and propose fixes, and that's what ultimately suggested the compositor switch. I hope coding agents might help Linux and tinkering gain popularity.
 
