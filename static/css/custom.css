@@ -74,6 +74,55 @@
     }
 }
 
+/* Tables */
+main#content table {
+    width: 95%;
+    margin: 1.5rem 2.5%;
+    border-collapse: collapse;
+}
+
+main#content th,
+main#content td {
+    padding: 0.5rem 1.2rem;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+main#content th:not(:last-child),
+main#content td:not(:last-child) {
+    border-right: 1px solid #e1e4e8;
+}
+
+main#content th {
+    border-bottom-width: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+    main#content th,
+    main#content td {
+        border-bottom-color: #30363d;
+    }
+}
+
+[data-theme="dark"] main#content th,
+[data-theme="dark"] main#content td {
+    border-bottom-color: #30363d;
+}
+
+/* Side-by-side image pair (centered) */
+main#content .image-pair {
+    display: flex;
+    justify-content: center;
+    gap: 2%;
+    width: 95%;
+    margin: 1.5rem 2.5%;
+}
+
+main#content .image-pair img {
+    width: 49%;
+    max-width: 49%;
+    margin: 0;
+}
+
 /* Mermaid diagram styling */
 .mermaid {
     text-align: center;

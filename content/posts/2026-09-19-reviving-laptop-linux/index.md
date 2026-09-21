@@ -1,5 +1,5 @@
 ---
-title: "Reviving a 9-year-old HP laptop with Linux and hardware"
+title: "Reviving a 9-year-old laptop with Linux and hardware"
 date: 2026-09-20
 draft: true
 url: "/laptop-revival/"
@@ -11,7 +11,7 @@ I have a 2017 HP Pavilion 15-cc6xx, with an Intel i7-8550U (8th-gen) and 12GB RA
 
 I had actually tried out Linux before on a very old laptop while back in high school; it didn't go great as the hardware was even worse, I set it as dual-boot to keep Windows which caused problems, but most of all I just didn't keep at it long enough to get it to a great state.
 
-This time around, I did a bit more research upfront, but most importantly, LLMs and coding agents exist now! I do a lot of compute cluster and infra work at work now, and LLMs/agents have of course completely changed the game from Googling and searching through forums to simply asking the agent. I know Linux has a similar problem profile of fiddly config knobs, so with agents it seemed like a great new opportunity to try it out. Spoiler - it went great! I've since been using Linux on the HP for a month now, for some personal projects, open-source work, and to type this and my previous blog post. 
+This time around, I did a bit more research upfront, but most importantly, coding agents exist now! I do a lot of compute cluster and infra work at work now, and LLMs/agents have of course completely changed the game from Googling and searching through forums to simply asking the agent. I know Linux has a similar problem profile of fiddly config knobs, so with agents it seemed like a great new opportunity to try it out. Spoiler - it went great! I've since been using Linux on the HP for a month now, for some personal projects, open-source work, and to type this and my previous blog post. 
 
 ---
 
@@ -57,21 +57,22 @@ What I'd call out here is the lingering edge cases in setting up Linux on an old
 
 As I was debugging the frozen screen issue, and as I was just asking Grok/other models about the Linux install, one thing that came up with the slow disk speeds. It turns out this laptop was on a pretty budget HDD this entire time, and disk read speed was a huge bottleneck for basically every operation: boot times, app startup, file loading, etc. Memory swap was basically impossible, which explained why multitasking would always feel so sluggish back on Windows during my college days.
 
-The coding agent figured out there was a spare, empty SSD slot in the laptop, and it measured the disk read speeds and used that to project that adding a basic M.2 SSD would speed up sequential reads by ~8-10x, and random reads (latency) by ~100x. HDD vs. SSD performance is a well-characterized topic, and every new mid and upper-tier laptop has certainly come with an SSD for many years, so it seemed like a nice upgrade. It sounds silly to be spending money upgrading a 9-year-old laptop, but I had already spent the time reinstalling the OS and was eager to make it daily driver-worthy, so I pulled the trigger on a [512GB Timetec M.2 SATA 2280 SSD](https://www.amazon.com/dp/B08GJDHMPB) from Amazon for $72.
+The coding agent figured out there was a spare, empty SSD slot in the laptop, and it measured the disk read speeds and used that to project that adding a basic M.2 SSD would speed up sequential reads by ~8-10x, and random reads (latency) by even more. HDD vs. SSD performance is well-known, and every new mid and upper-tier laptop has come with an SSD for many years now. It sounds silly to be spending money upgrading a 9-year-old laptop, but I had already spent the time reinstalling the OS and was eager to make it daily driver-worthy, so I pulled the trigger on a [512GB Timetec M.2 SATA 2280 SSD](https://www.amazon.com/dp/B08GJDHMPB) from Amazon for $72.
 
 Once it arrived, I took off the bottom cover and installed the SSD. This was pretty easy; I've done the same with replacing the SSD in my Steam Deck, so I did the same here (there are many online guides and videos).
 
 After reboot, the OS was still installed only on the HDD. I asked Grok Build to find the new SSD and help me get the OS set up there, and it was able to figure it all out! From what I understand, it created a new drive object within the OS on the SSD, copied the entire OS and filesystem over from the HDD, and then it set the startup settings to boot onto the SSD instead. The boot settings did not work at first: it booted back onto the OS on HDD a couple times, then it landed on the SSD, then back on the HDD. Finally it was able to figure out the configs and get the SSD set permanently.
 
-[pics]
+<div class="image-pair">
+  <img src="ssd-before.jpg" alt="Empty M.2 slot in the HP Pavilion" />
+  <img src="ssd-after.jpg" alt="Timetec M.2 SATA SSD installed" />
+</div>
 
 Once booted onto the SSD, I was legitimately shocked at how much snappier everything is. Ghostty started in <1 second! Firefox in <2! I have a habit of constantly using Alt-Tab to switch across windows, and Ctrl + Space to open the App Finder, and those both seem to literally load instantly which makes a massive difference in OS feel. It blows my mind that I just accepted this sluggish performance on the HDD for my college years, using this for everything from Matlab projects to Python data analysis to [Aspen HYSYS](https://www.aspentech.com/en/products/engineering/aspen-hysys) (extremely heavyweight processing engineering modelling software, no idea how was able to run).
 
 The HDD is still installed and holds the stale OS copy. I plan to wipe the OS there and then use the HDD as bulk storage, as it's a full 1TB of good functional storage, but I haven't gotten around to that yet.
 
-For actual performance benchmarks, I did have the foresight to record some numbers before and after the upgrade:
-
-[table]
+For actual performance benchmarks, I did have the foresight to record some numbers before and after the upgrade - see [Performance Summary](#performance-summary) below.
 
 
 
@@ -83,13 +84,49 @@ The agent started out measuring average power draw around 5W, with heavy use goi
 
 Again, I ordered a new replacement online - a TF03XL part number pouch cell battery, and I chose one sold by brand GHU for $33, since it seemed to have good reviews and a legit website with many battery models for sale. It came in, I cracked open the cover again, and I replace the battery itself.
 
-[image]
+![New GHU TF03XL battery installed](battery-installed.jpg)
 
 After reboot, it got stuck on a BIOS `Unauthenticated` error as I had to re-disable secure boot, then it booted healthy. I did a full capacity test from 100% to 10%, and once again this hardware upgrade did not disappoint: it gets 97% of the designed 42Wh energy. It's getting an extremely healthy 6+ hours of mixed use battery life, more than double the previous life. Again, an amazing upgrade compared to before, and I kicking myself for not trying this when I was actually using this laptop all the time in college!
 
-[data]
-
 ## Performance Summary
+
+All before/after numbers measured with identical methodology (fio direct I/O, `systemd-analyze`, hyperfine 10 runs), on the same OS and kernel.
+
+**Storage (fio, direct I/O):**
+
+| Metric | HDD (Seagate 1TB SMR) | SSD (Timetec M.2 SATA) | Change |
+|---|---:|---:|---:|
+| Sequential write, 1M blocks | 80.2 MiB/s | 248 MiB/s | 3.1x |
+| Sequential read, 1M blocks | 112 MiB/s | 307 MiB/s | 2.7x |
+| 4K random read, QD1 | 96 IOPS | 4,658 IOPS | 48x |
+| 4K random write, QD1 | 102 IOPS | 4,629 IOPS | 45x |
+| Average op latency | ~10.3 ms | ~0.21 ms | ~49x |
+
+**Boot time (systemd-analyze):**
+
+| Stage | HDD | SSD |
+|---|---:|---:|
+| Userspace | 18.3 s | 10.9 s |
+| To graphical target | 16.4 s | 9.5 s |
+
+**App startup (hyperfine, warm cache):**
+
+| Command | HDD | SSD | Change |
+|---|---:|---:|---:|
+| Firefox | 55.9 ms | 30.7 ms | 1.8x |
+| Chromium | 66.9 ms | 38.2 ms | 1.8x |
+| Thunar | 85.8 ms | 31.1 ms | 2.8x |
+| Ghostty | 78.0 ms | 42.7 ms | 1.8x |
+
+**Battery:**
+
+| Metric | Old battery | New battery |
+|---|---:|---:|
+| Reported design capacity | 15.5 Wh (misreported) | 43.98 Wh |
+| Gauge-learned full capacity | - | 42.87 Wh |
+| Measured delivered energy (100% to 10%) | - | 37.24 Wh |
+| Estimated true capacity | ~15-20 Wh | ~41.7 Wh |
+| Runtime, mixed use | ~1.5 h | 6+ h |
 
 
 ## Conclusion
