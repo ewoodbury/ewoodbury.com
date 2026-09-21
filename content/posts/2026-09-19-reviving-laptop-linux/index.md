@@ -35,7 +35,11 @@ In the CachyOS installer, it also prompts to pick a desktop environment. After a
 
 ## Linux Configuration and the Frozen Screen of Death
 
+As I started to use CachyOS, one issue kept popping up, roughly every 2-4 hours, which is the screen would freeze and all input became unresponsive. The only fix was to do a hard reboot with the power button.
 
+This was a very tricky issue; I took a lot of time trying to understand and reproduce the issue with trying different apps, messing with display/brightness settings, switching to the cachyos-lts os boot kernel, disabling Wi-Fi power saving, and ... I even ran a full 2-hour memtest suite, to verify the memory sticks had no faults tripping up the OS. Finally, I switched off the Xfce compositor with `...`, and that fixed it. I haven't had an issue with freezing since then.
+
+What I'd call out here is the lingering edge cases in setting up Linux on an old laptop; this kind of issue would have killed the whole project if I were lazier or didn't have coding agents. The only reason I knew to try any of these potential fixes was that I could simply ping Grok to check my system logs and propose fixes, and that's what ultimately suggested the compositor switch. I hope coding agents might help Linux and tinkering gain popularity.
 
 
 ## SSD Upgrade
@@ -70,7 +74,7 @@ Again, I ordered a new replacement online - a TF03XL part number pouch cell batt
 
 [image]
 
-After reboot, it got stuck on a BIOS `Unauthenticated` error, until I figured out I had to re-disable Secure Boot due to the new hardware component being detected. After that it booted up healthy. I charged the battery up to 100%, then unplugged and used the laptop throughout the day down to 10%, with a background logger set up and running from my agent. And once again, this hardware upgrade did not disappoint: it gets 97% of the designed 42Wh energy (well within the range of a new battery). So it fully panned out, and so far it's looking like an extremely healthy 6+ hours of mixed use battery life. Again, an amazing upgrade compared to before, and I kicking myself for not trying this when I was actually using this laptop all the time in college!
+After reboot, it got stuck on a BIOS `Unauthenticated` error as I had to re-disable secure boot, then it booted healthy. I did a full capacity test from 100% to 10%, and once again this hardware upgrade did not disappoint: it gets 97% of the designed 42Wh energy. It's getting an extremely healthy 6+ hours of mixed use battery life, more than double the previous life. Again, an amazing upgrade compared to before, and I kicking myself for not trying this when I was actually using this laptop all the time in college!
 
 [data]
 
