@@ -2,7 +2,9 @@
 title: "Posts"
 ---
 
-Welcome to my website! I write about data processing engines (like Spark), databases, data strategy in organizations, and other general programming topics.
+Welcome to my website! Read on for essays about data processing engines, databases, functional programming, math, and other technical topics.
+
+I'm a big proponent of AI for technical work, but my writings are fully in my own words.
 
 ### Photos
 
