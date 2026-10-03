@@ -4,6 +4,19 @@ body {
     font-family: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+main#content :not(pre) > code {
+    background-color: #e6e8eb;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+}
+
+[data-theme="dark"] main#content :not(pre) > code {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #e6edf3;
+}
+
 @media (min-width: 770px) {
     body {
         width: 770px;
