@@ -2,7 +2,7 @@
 
 @media (min-width: 770px) {
     body {
-        width: 900px; /* Increased from 600px to 900px for better readability */
+        width: 770px;
         max-width: 90%; /* Ensure it doesn't exceed 90% of viewport on smaller screens */
     }
     
@@ -66,12 +66,16 @@
     }
 }
 
-/* For even larger screens, you can make it even wider */
 @media (min-width: 1200px) {
     body {
-        width: 1000px;
+        width: 870px;
         max-width: 85%;
     }
+}
+
+main#content article {
+    font-size: 1.04em;
+    line-height: 1.82;
 }
 
 /* Tables */
