@@ -2,6 +2,8 @@
 title: "Rebuilding Apache Spark's StageBuilder from Scratch"
 date: 2025-09-06
 draft: false
+aliases:
+  - /posts/2025-09-06_sparklet_stagebuilder.md/
 ---
 
 I've been working on rebuilding Apache Spark from scratch in Scala 3 with a project called **Sparklet**. My main goal is to learn more about data processing engine internals and distributed systems, but I'm also eventually hoping to match or even beat Spark's performance with this rebuild. For more background, see my previous post: [Rebuilding Spark with Scala 3](https://ewoodbury.com/posts/2025-07-31_sparklet/).

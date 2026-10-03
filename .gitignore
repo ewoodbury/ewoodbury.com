@@ -5,3 +5,6 @@
 public/
 # Hugo resource cache
 resources/
+# Hugo lock file from local server/build
+.hugo_build.lock
+

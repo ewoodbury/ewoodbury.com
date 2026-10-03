@@ -5,7 +5,9 @@ Personal site and blog
 
 # Setup
 
-- In the `/themes` directory, run `git clone https://github.com/mfg92/hugo-shortcode-gallery.git` to copy the library for rendering the photo gallery.
+- Themes live in `/themes` (etch plus hugo-shortcode-gallery for the photo page).
+
+- Posts are page bundles: `content/posts/<slug>/index.md`, with images next to the post. `hugo new posts/<slug>` creates that layout.
 
 - Run `hugo server`. Open `localhost:1313` to view the site.
 
