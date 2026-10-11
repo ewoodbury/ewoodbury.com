@@ -44,67 +44,25 @@ The engine may also need to pay the cost type conversions, or "boxing" in the JV
 
 Due to both one-by-one processing and boxing, processing that 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
 
-(will make into nicer mermaid or image.)
-```
-List[Int], already in memory
-
-:: ──► :: ──► :: ──► nil
-│      │      │
-Integer Integer Integer
-┌────┐ ┌────┐ ┌────┐
-│ 12 │ │ -4 │ │  7 │
-└────┘ └────┘ └────┘
-  × 1,000,000 of each
-
-one element of xs.filter(_ > 0)
-
-load next cell     tail
-load head          the Integer
-     │
-     ▼
-unboxToInt
-checkcast Integer
-load the int field
-     │
-     ▼
-compare > 0
-     │
-     ├─ false: drop it. no new Integer, no new ::
-     │
-     ▼ true
-keep that same Integer
-no Integer.valueOf
-     │
-     ▼
-new ::
-allocate a cons cell
-point it at that same Integer
-link it to the previous survivor
-
-one element of xs.map(_ * 2)
-
-load next cell     tail
-load head          the Integer
-     │
-     ▼
-unboxToInt
-checkcast Integer
-load the int field
-     │
-     ▼
-imul 2
-the whole arithmetic
-     │
-     ▼
-Integer.valueOf
-allocate a new Integer
-store the int in it
-     │
-     ▼
-new ::
-allocate a cons cell
-point it at that Integer
-link it to the previous cell
+```mermaid
+flowchart TD
+  subgraph filt["Filter loop, x 1,000,000"]
+    f1["chase the next pointer"] --> f2["unbox the Integer"]
+    f2 --> f3{"> 0?"}
+    f3 -->|no| f1
+    f3 -->|yes| f4["allocate a cons cell"]
+    f4 --> f1
+  end
+  mid1["a new list, in memory"]
+  subgraph mapl["Map loop, x 500,000"]
+    m1["chase the next pointer"] --> m2["unbox"]
+    m2 --> m3["multiply by 2"]
+    m3 --> m4["allocate an Integer and a cons cell"]
+    m4 --> m1
+  end
+  filt --> mid1 --> mapl
+  style filt fill:#fff3bf,stroke:#e6b800
+  style mapl fill:#fff3bf,stroke:#e6b800
 ```
 
 ## Vectorization
@@ -113,27 +71,41 @@ The key principle to understand for vectorization is that of contiguous data. Wh
 
 The column is stored in a contiguous location of memory addresses: in our case the 1 million ints take 4MB of contiguous addresses.
 
-In the engine, we set this up using a custom `ColumnKernel` type, which defines the data's contiguous layout in-memory, enabling the more optimized execution to take place.
+In the engine, that column is an `Array[Int]`, and a loop over any `Array` will get handled by the JVM compiler HotSpot's auto-vectorizer. Auto-vectorization is on by default with the optimizer Superword Level Parallelism (SLCP), but it can be enabled or disabled as compiler flags:
+```
+java -XX:+UseSuperWord ...    # on, default
+java -XX:-UseSuperWord ...    # off, scalar
+```
+
+Therefore to enable vectorization, a Scala data processing engine should simply "get out of the way", and express the operation with vanilla data structures to let the compiler do the vectorization. 
 
 ```scala
-val filtered = ColumnKernel.filterInt32(batch, 0, value => value > 0)
-val projected = ColumnKernel.projectInt32(filtered, 0, value => value * 2)
-
-var written = 0
-var row = 0
-while (row < live) {
-  if (predicate(in(row))) {
-    out(written) = in(row)
-    written += 1
+def filterInt32(in: Array[Int]): (Array[Int], Int) = {
+  val out = new Array[Int](in.length)
+  var written = 0
+  var row = 0
+  while (row < in.length) {
+    if (in(row) > 0) {
+      out(written) = in(row)
+      written += 1
+    }
+    row += 1
   }
-  row += 1
+  (out, written)
 }
 
-row = 0
-while (row < live) {
-  out(row) = mapper(in(row))
-  row += 1
+def projectInt32(in: Array[Int], length: Int): Array[Int] = {
+  val out = new Array[Int](length)
+  var row = 0
+  while (row < length) {
+    out(row) = in(row) * 2
+    row += 1
+  }
+  out
 }
+
+val (filtered, survivors) = filterInt32(column)
+val projected = projectInt32(filtered, survivors)
 ```
 
 When the CPU starts processing the data in the column, it knows that the next value is always 4 bytes ahead of the current one. Therefore, it pulls an entire chunk of data, 64 bytes or 16 ints, from memory into L1 cache, before the CPU processing loop even asks for it. Then the CPU always has the next value available in L1, whereas in the row-based approach, the CPU needs to read the pointer then pull the next value from memory, for every single value.
@@ -151,7 +123,24 @@ The row-based engine needs 2 million total data fetches for both filter and map 
 
 With around 20 clock cycles per L3 fetch and 100 cycles per RAM fetch, the vectorized operation is 50x faster. From my tests with Scala, this is approximately correct, with the row-based taking xx ms versus xx ms for vectorized.
 
-[Chart, row versus columnar wall time]
+```mermaid
+flowchart TD
+  subgraph filt["Filter loop, x 1,000,000"]
+    f1["load in(i), 4 bytes ahead"] --> f2{"> 0?"}
+    f2 -->|no| f1
+    f2 -->|yes| f3["store out(written)"]
+    f3 --> f1
+  end
+  mid["intermediate column, in memory"]
+  subgraph proj["Map loop, x 500,000"]
+    p1["load filtered(j)"] --> p2["multiply by 2"]
+    p2 --> p3["store projected(j)"]
+    p3 --> p1
+  end
+  filt --> mid --> proj
+  style filt fill:#fff3bf,stroke:#e6b800
+  style proj fill:#fff3bf,stroke:#e6b800
+```
 
 ## Fused Operations
 
@@ -178,16 +167,25 @@ while (row < live) {
 ```
 Note that fusing is separate from vectorization, and it's been a common operation in query engines for a long time, including in Spark. With vectorization and fusing together though, for large column-heavy workloads, engines see massive performance benefits.
 
-[Chart of all 3 results so far]
-
+```mermaid
+flowchart TD
+  subgraph kern["One loop, x 1,000,000"]
+    a["load in(i) into a register"] --> b{"> 0?"}
+    b -->|no| a
+    b -->|yes| c["multiply by 2, same register"]
+    c --> d["one store"]
+    d --> a
+  end
+  style kern fill:#fff3bf,stroke:#e6b800
+```
 
 ## SIMD
 
-Vectorization might immediately bring up memories of SIMD, or Single Instruction Multiple Data. This is a form of vectorized parallel processing one level even deeper, within the CPU instructions themselves.
+You might have immediately thought about SIMD (Single Instruction Multiple Data), which is the more well-known form of vectorized optimizations. However we leave this until the end, to illustrate the significant gains from more simple vectorization, at the planning and compiler levels first. SIMD lives one level even deeper, within the CPU instructions themselves. 
 
 The core idea here is exactly as it sounds: a single CPU instruction literally running over multiple values in a single cycle. In this example, the operation `out[i] = in[i] * 2` becomes a single AVX2 instruction operating on 8 ints (32 bytes) at once. All 8 ints are loaded into adjacent lanes as a contiguous block, the CPU executes the bit shift operation for the multiply across all ints, then all 8 int results are stored in oine operation.
 
-For Scala in fact, a plan `while` loop over an `Array[Int]` is automatically using SIMD on modern JVM compilers, such as [HotSpot](https://en.wikipedia.org/wiki/HotSpot).
+For Scala in fact, a plan `while` loop over an `Array[Int]` is not only vectorized, it's also set to automatically using SIMD on modern JVM compilers such as HotSpot.
 
 Scala also enables calling for SIMD explicitly, using `jdk.incubator.vector`. Here `SPECIES_256` represents 8 ints (256 bits) processed in parallel across lanes:
 
@@ -210,11 +208,23 @@ def explicitMul(in: Array[Int], out: Array[Int]): Unit =
 
 On 1 million ints, with HotSpot's auto-vectorizer turned off, the plain `out(i) = in(i) * 2` loop took 0.60 ms. This 8-wide loop took 0.32 ms, for a ~1.8x speedup (data movement overheads prevent it from being a full 8x speedup.)
 
-Note that the filter operation is not included here; since that drops some of the values, it's not as trivial as a simple map operation across the lanes. There do exist instruction sets that extend SIMD for these operations, such as Intel's AVX-512 as an extension to x86. This essentially works using masks ([Opmask registers](https://en.wikipedia.org/wiki/AVX-512#Opmask_registers) to handle filtered values, and pushing the surviving values down to bottom lanes from which the results are stored. 
+Note that the filter operation is not included here; since that drops some of the values, it's not as trivial as a simple map operation across the lanes. There do exist instruction sets that extend SIMD for these operations, such as Intel's AVX-512 as an extension to x86. This essentially works using masks ([Opmask registers](https://en.wikipedia.org/wiki/AVX-512#Opmask_registers) to handle filtered values, and pushing the surviving values down to bottom lanes from which the results are stored.
+
+```mermaid
+flowchart TD
+  subgraph kern["Dense multiply, x 125,000"]
+    a["load 8 ints, 32 bytes"] --> b["one instruction shifts all 8"]
+    b --> c["store 8 ints"]
+    c --> a
+  end
+  style kern fill:#fff3bf,stroke:#e6b800
+```
 
 ## On Languages
 
-We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop.
+We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. 
+
+Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop. Of course, we saw that the JVM provides auto-vectorization and other optimizations during the compile step itself, which is in contrast to interpreted languages like Python which are stuck with executing operations as specified (although this is starting to change with the in-progress [Python JIT](https://peps.python.org/pep-0836/)).c1
 
 Still, low-level languages like C++ and Rust provide more direct memory control, specifically in being able to avoid the boxing and unboxing conversion cost of values, whereas JVM languages pay the boxing tax at the beginning and end of the operation when converting raw bytes. They can also specify the exact instruction: for the filter step, a C++/Rust could the AVX-512 compress on a CPU that has it, instead of leaving that choice to the JIT compiler.
 
