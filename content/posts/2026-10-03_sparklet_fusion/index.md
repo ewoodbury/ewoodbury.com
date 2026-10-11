@@ -14,16 +14,17 @@ Contrary to popular belief, vectorization works in any language; it doesn't need
 
 ## Row-based Execution
 
-Let's start with a basic query operation, using a Spark-style syntax in Scala: 
+Let's start with a basic query operation with a `filter` and `map` stage in Scala: 
 ```scala
 values.filter(_ > 0).map(_ * 2).collect()
 ```
-A simple row engine runs the filter, then the multiply, on each int, one at a time. It allocates one object for the filter function and one for the map function, then calls each once per element through an iterator:
+
+To implement this in a basic query engine, we define operators for each of the `filter` and the `map`, each of which take a function `f` as a parameter. Each operator here uses a simple iterator to walk over each element in `values`. 
 
 ```scala
-def filter[A](predicate: A => Boolean): Stage[A, A] = {
+def filter[A](f: A => Boolean): Stage[A, A] = {
   SingleOpStage { p =>
-    val it = p.data.iterator.filter(predicate)
+    val it = p.data.iterator.filter(f)
     Partition(IterUtil.iterableOf(it))
   }
 }
@@ -35,11 +36,13 @@ def map[A, B](f: A => B): Stage[A, B] = {
   }
 }
 ```
+So for this query, it walks over all elements and calls the `filter` function for each, allocates memory and creates a new `Partition` data structure for that result, then does the same with the `map` function on each element and allocating a new `Partition` for the result.
+
 Critically, the data is not physically located together, further slowing down processing. Since each int is its own object, the next value is a pointer chase away rather than at the adjacent 4 bytes. A contiguous array of bytes could stream directly from cache to CPU, but that's impossible here.
 
 The engine may also need to pay the cost type conversions, or "boxing" in the JVM, which is converting from the `java.lang.Integer` to a raw 4-byte int before doing the comparison, then boxing the result after the map from raw int back into `java.lang.Integer`. This is true to some extent for all high-level languages like Scala.
 
-Due to both 1-by-1 processing and boxing, processing that 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
+Due to both one-by-one processing and boxing, processing that 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
 
 (will make into nicer mermaid or image.)
 ```
@@ -110,50 +113,72 @@ The key principle to understand for vectorization is that of contiguous data. Wh
 
 The column is stored in a contiguous location of memory addresses: in our case the 1 million ints take 4MB of contiguous addresses.
 
+In the engine, we set this up using a custom `ColumnKernel` type, which defines the data's contiguous layout in-memory, enabling the more optimized execution to take place.
+
+```scala
+val filtered = ColumnKernel.filterInt32(batch, 0, value => value > 0)
+val projected = ColumnKernel.projectInt32(filtered, 0, value => value * 2)
+
+var written = 0
+var row = 0
+while (row < live) {
+  if (predicate(in(row))) {
+    out(written) = in(row)
+    written += 1
+  }
+  row += 1
+}
+
+row = 0
+while (row < live) {
+  out(row) = mapper(in(row))
+  row += 1
+}
+```
+
 When the CPU starts processing the data in the column, it knows that the next value is always 4 bytes ahead of the current one. Therefore, it pulls an entire chunk of data, 64 bytes or 16 ints, from memory into L1 cache, before the CPU processing loop even asks for it. Then the CPU always has the next value available in L1, whereas in the row-based approach, the CPU needs to read the pointer then pull the next value from memory, for every single value.
 
-Recall the standard data storage setup for a CPU:
+Recall the standard data storage on a CPU (sizes for an Intel i7-8565U):
 1. **CPU register**: directly on the CPU, accessible in 1 CPU clock cycle, for bytes being processed
 2. **L1 cache**: 32KB, accessible in 1-2 clock cycles
 3. **L2 cache**: 256KB, accessible in 10-15 clock cycles
 4. **L3 cache**: 8MB, accessible in ~20-40 clock cycles
 5. **Memory (RAM)**: 12GB, accessible in ~100-400 clock cycles
 
-(Size values here are for an 8th-gen i7.)
-
-In the case of example, with the processed data always being ready and waiting in L1 cache, the CPU is fully saturated and speeds through the 1 million ints for the filter step, writing the filter result back to memory. Then it speeds through the map step as well.
+In the 1-million int example, the data to process is always ready in L3 or L1 cache, so the CPU is fully saturated and speeds through the 1 million ints for the filter step, writing the filter result back to memory. Then it speeds through the map step as well. The data fetch from RAM to L3 is usually the bottleneck in reality.
 
 The row-based engine needs 2 million total data fetches for both filter and map across the 1 million values. The vectorized approach's bottleneck can be modeled as the 2 million L3 -> L1 fetches and 2 million CPU -> L1 cache fetches, under the assumption that data is always pre-fetched into cache and the CPU is never idle.
 
-Conservatively, with 20 clock cycles per L3 fetch and 100 per RAM fetch, the vectorized operation is 50x faster. From my tests with Scala, this is approximately correct, with the row-based taking xx ms versus xx ms for vectorized.
+With around 20 clock cycles per L3 fetch and 100 cycles per RAM fetch, the vectorized operation is 50x faster. From my tests with Scala, this is approximately correct, with the row-based taking xx ms versus xx ms for vectorized.
 
-### Code
-
-```scala
-// excerpt showing simplified setup of vectorized processing, from Scarlet
-
-````
-
-[benchmark numbers]
+[Chart, row versus columnar wall time]
 
 ## Fused Operations
 
-In the previous example, the engine still executes two CPU instructions per value, so each value leaves the CPU. The data gets pulled from memory to L3 to L1 to CPU for the first filter, only to be pushed back to L3 then L1 then CPU again for the mutiply. With data movement being the bottleneck, the overall query is limited by moving values between cache levels up to 2 million times, for only 1 million values.
+In the previous example, the engine executes two CPU instructions on each element, so each value leaves the CPU in between the oerations. The data gets pulled from memory to L3 to L1 to CPU for the first filter, only to be pushed back to L3 then L1 then CPU again for the mutiply. With data movement being the bottleneck, the overall query is limited by moving values between cache levels up to 2 million times, for only 1 million values.
 
-This can be optimized one level up, in the planning stage, by fusing the CPU operations into a single kernel instead. The CPU can run both the filter and the multiply step while the data is still in the register, so there is no intermediate array and no data movement.
+This can be optimized beforehand in the planning stage, by fusing the CPU operations into a single kernel instead. The CPU can run both the filter and the multiply step while the data is still in the register, so there is no intermediate array and no data movement.
 
-Note that fusing is separate from vectorization, and it's been a common operation in query engines for a long time, including in Spark. With vectorization and fusing together though, for large column-heavy workloads, engines see massive performance benefits.
-
-### Code
-In code, the query planning needs to be updated to recognize and combine these into a single operation (or stage, in typical query planning language).
+The planner matches the chain outside the loop and picks one pipeline. For this query that is `Int32Pipeline.FP`, and `inline` pastes both functions into its loop. One pass, one output column.
 
 ```scala
+case List(Filter(predicate), Project(mapper)) =>
+  Int32Pipeline.FP(batch, predicate, mapper)
 
-````
-[short explanation]
-[benchmark numbers]
+var written = 0
+var row = 0
+while (row < live) {
+  val value = in(row)
+  if (predicate(value)) {
+    out(written) = mapper(value)
+    written += 1
+  }
+  row += 1
+}
+```
+Note that fusing is separate from vectorization, and it's been a common operation in query engines for a long time, including in Spark. With vectorization and fusing together though, for large column-heavy workloads, engines see massive performance benefits.
 
-
+[Chart of all 3 results so far]
 
 
 ## SIMD
@@ -162,11 +187,9 @@ Vectorization might immediately bring up memories of SIMD, or Single Instruction
 
 The core idea here is exactly as it sounds: a single CPU instruction literally running over multiple values in a single cycle. In this example, the operation `out[i] = in[i] * 2` becomes a single AVX2 instruction operating on 8 ints (32 bytes) at once. All 8 ints are loaded into adjacent lanes as a contiguous block, the CPU executes the bit shift operation for the multiply across all ints, then all 8 int results are stored in oine operation.
 
-### Code
+For Scala in fact, a plan `while` loop over an `Array[Int]` is automatically using SIMD on modern JVM compilers, such as [HotSpot](https://en.wikipedia.org/wiki/HotSpot).
 
-For Scala, in fact a plan `while` loop over an `Array[Int]` is automatically using SIMD on modern JVM compilers, such as [HotSpot](https://en.wikipedia.org/wiki/HotSpot).
-
-You can also call for SIMD explicitly here, using `jdk.incubator.vector`. Here `SPECIES_256` represents 8 ints (256 bits) processed in parallel across lanes:
+Scala also enables calling for SIMD explicitly, using `jdk.incubator.vector`. Here `SPECIES_256` represents 8 ints (256 bits) processed in parallel across lanes:
 
 ```scala
 import jdk.incubator.vector.{IntVector, VectorOperators}
@@ -191,11 +214,9 @@ Note that the filter operation is not included here; since that drops some of th
 
 ## On Languages
 
-We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization.
+We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop.
 
-That being said, low-level systems languages provide the advantage of more direct memory control, specifically in being able to avoid the boxing and unboxing conversion cost of values. Spark and JVM languages can reach the same speed within the CPU loops, but pay the boxing tax at the beginning and end of the operation when converting to and from raw bytes.
-
-[some more details]
+Still, low-level languages like C++ and Rust provide more direct memory control, specifically in being able to avoid the boxing and unboxing conversion cost of values, whereas JVM languages pay the boxing tax at the beginning and end of the operation when converting raw bytes. They can also specify the exact instruction: for the filter step, a C++/Rust could the AVX-512 compress on a CPU that has it, instead of leaving that choice to the JIT compiler.
 
 
 Notes 
