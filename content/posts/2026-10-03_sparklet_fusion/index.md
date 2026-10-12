@@ -1,12 +1,12 @@
 ---
 title: "Vectorized data processing from first principles"
-date: 2026-10-03
+date: 2026-10-12
 draft: true
 ---
 
 Vectorization is the technique of running a tight loop over a column of values, typically a few thousand values at a time. It's used by ClickHouse, DuckDB, Numpy, Datafusion, and all modern analytical processing engines. 
 
-This contrasts with how most backend data systems work: relational databases (PostgresDB/MySQL), Kafka, and even parts of Apache Spark's execution all use a row-based formats. For analytical use cases though, where filters and aggregations on large columns of data are common, vectorization has become the standard due to its performance advantages.
+This contrasts with how most backend data systems work. Postgres and MySQL walk one record at a time. Spark SQL also steps one record at a time inside a stage. The values are raw bytes, not an object each. The Parquet reader is the part that is actually columnar, and it turns those columns back into rows for the rest of the plan. For analytical use cases, where filters and aggregations on large columns are common, vectorization has become the standard because it is so much faster.
 
 Vectorization works in any language; it doesn't need a native language like C++ or Rust (a common misconception). In fact, this post builds the entire engine in pure Scala to demonstrate; the principles apply no matter what language is in use.
 
@@ -38,11 +38,11 @@ def map[A, B](f: A => B): Stage[A, B] = {
 ```
 This query walks over all elements and calls the `filter` function on each, allocates memory, and creates a new `Partition` data structure for that result. It then does the same with the `map` function on each element, again allocating a new `Partition` for the result. That's a lot of steps!
 
-For this case, he data is not physically located together in memory. Since each int is its own object, the next value is a pointer chase away rather than at the next 4 bytes. The CPU loads each value into memory, processes it, reads the pointer for the next value, then goes all the way back to memory to fetch it.
+For this case, the data is not physically located together in memory. Since each int is its own object, the next value is a pointer chase away rather than at the next 4 bytes. The CPU loads each value into memory, processes it, reads the pointer for the next value, then goes all the way back to memory to fetch it.
 
 Another potential slowdown is that of type conversions, or "boxing" as it's known in the JVM. The simple row-based Scala engine converts from the `java.lang.Integer` to a raw 4-byte int before doing the comparison, then boxes the result back into `java.lang.Integer`. This is true (to some extent) for all high-level languages like Scala which manage types.
 
-Due to both one-by-one processing and boxing, the row-based engine on the 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
+Due to both one-by-one processing and boxing, the row-based engine on the 1 million element list is pretty slow! The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
 
 ```mermaid
 flowchart TD
@@ -106,18 +106,14 @@ val projected = projectInt32(filtered, survivors)
 
 When the CPU starts processing the data in the column, it knows that the next value is always 4 bytes ahead of the current one. Therefore, it pulls an entire chunk of data, 64 bytes or 16 ints, from memory into L1 cache, before the CPU processing loop even asks for it. Then the CPU always has the next value available in L1, whereas in the row-based approach, the CPU needs to read the pointer then pull the next value from memory, for every single value.
 
-Recall the standard data storage on a CPU (sizes for an Intel i7-8565U):
+Recall the standard data storage on a CPU (sizes for an Intel i7-8550U):
 1. **CPU register**: directly on the CPU, accessible in 1 CPU clock cycle, for bytes being processed
-2. **L1 cache**: 32KB, accessible in 1-2 clock cycles
+2. **L1 cache**: 32KB, accessible in about 4 clock cycles
 3. **L2 cache**: 256KB, accessible in 10-15 clock cycles
 4. **L3 cache**: 8MB, accessible in ~20-40 clock cycles
 5. **Memory (RAM)**: 12GB, accessible in ~100-400 clock cycles
 
 In the 1-million int example, the data to process is always ready in L3 or L1 cache, so the CPU is fully saturated and speeds through the 1 million ints for the filter step, writing the filter result back to memory. Then it speeds through the map step as well. The data fetch from RAM to L3 is usually the bottleneck in reality.
-
-The row-based engine needs 2 million total data fetches for both filter and map across the 1 million values. The vectorized approach's bottleneck can be modeled as the 2 million L3 -> L1 fetches and 2 million CPU -> L1 cache fetches, under the assumption that data is always pre-fetched into cache and the CPU is never idle.
-
-With around 20 clock cycles per L3 fetch and 100 cycles per RAM fetch, the vectorized operation is 50x faster. From my tests with Scala, this is approximately correct, with the row-based taking xx ms versus xx ms for vectorized.
 
 ```mermaid
 flowchart TD
@@ -183,7 +179,7 @@ flowchart TD
 
 You might have immediately thought about SIMD (Single Instruction Multiple Data), which is the more well-known form of vectorized optimizations. However we leave this until the end, to illustrate the significant gains from the simpler column loop, and from fusion, first. SIMD lives one level even deeper, within the CPU instructions themselves. 
 
-The core idea here is exactly as it sounds: a single CPU instruction literally running over multiple values in a single cycle. In this example, the operation `out[i] = in[i] * 2` becomes a single AVX2 instruction operating on 8 ints (32 bytes) at once. All 8 ints are loaded into adjacent lanes as a contiguous block, the CPU executes the bit shift operation for the multiply across all ints, then all 8 int results are stored in oine operation.
+The core idea here is exactly as it sounds: a single CPU instruction running over multiple values. In this example, the operation `out[i] = in[i] * 2` becomes a single AVX2 instruction operating on 8 ints (32 bytes) at once. All 8 ints are loaded into adjacent lanes as a contiguous block, the CPU shifts them all, then all 8 results are stored together.
 
 For a dense `out(i) = in(i) * 2`, a plain `while` over an `Array[Int]` is not only vectorized, it is also set to automatically use SIMD on modern JVM compilers such as HotSpot. That pass is SuperWord Level Parallelism, on by default, and it can be enabled or disabled as compiler flags:
 
@@ -211,9 +207,7 @@ def explicitMul(in: Array[Int], out: Array[Int]): Unit =
     i += 1
 ```
 
-On 1 million ints, with HotSpot's auto-vectorizer turned off, the plain `out(i) = in(i) * 2` loop took 0.60 ms. This 8-wide loop took 0.32 ms, for a ~1.8x speedup (data movement overheads prevent it from being a full 8x speedup.)
-
-Note that the filter operation is not included here; since that drops some of the values, it's not as trivial as a simple map operation across the lanes. There do exist instruction sets that extend SIMD for these operations, such as Intel's AVX-512 as an extension to x86. This essentially works using masks ([Opmask registers](https://en.wikipedia.org/wiki/AVX-512#Opmask_registers) to handle filtered values, and pushing the surviving values down to bottom lanes from which the results are stored.
+The 8th-gen i7 used for testing doesn't support the newer instruction set (AVX-512) which would let it use SIMD on the filter and map together due to needing to drop the filtered values, so this test only measured the impact of SIMD onthe map. SIMD showed some improvement due to the faster CPU operations, but since this data is large enough to not fit entirely into cache, the operation is still bottlenecked by the fetch from memory which is not impacted by SIMD.
 
 ```mermaid
 flowchart TD
