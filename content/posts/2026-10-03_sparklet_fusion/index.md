@@ -2,6 +2,8 @@
 title: "Vectorized data processing from first principles"
 date: 2026-10-12
 draft: true
+headerImage: "header.png"
+headerAlt: "Filter and map on 1 million integers. Row-based, vectorized, and vectorized plus fused, in nanoseconds per integer."
 ---
 
 Vectorization is the technique of running a tight loop over a column of values, typically a few thousand values at a time. It's used by ClickHouse, DuckDB, Numpy, Datafusion, and all modern analytical processing engines. 
