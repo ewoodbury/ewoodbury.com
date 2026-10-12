@@ -30,11 +30,12 @@ main#content :not(pre) > code {
     }
     
     main#content img {
-        max-width: 95%; /* Slightly narrower than text */
-        margin-left: 2.5%; /* Slight indentation */
+        max-width: 95%;
+        margin-left: auto;
+        margin-right: auto;
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
-        display: block; /* Ensure proper spacing */
+        display: block;
     }
     
     main#content figure {
@@ -147,21 +148,30 @@ main#content .image-pair img {
 /* Mermaid diagram styling */
 .mermaid {
     text-align: center;
-    margin: 2rem 0;
+    margin: 1rem 0;
     overflow-x: auto;
-    padding: 1rem;
+    padding: 0.35rem 0.25rem;
     background-color: #ffffff;
     border: 1px solid #e1e4e8;
     border-radius: 6px;
 }
 
+.mermaid svg {
+    display: block;
+    width: 78%;
+    max-width: 78%;
+    height: auto;
+    margin: 0 auto;
+}
+
 /* Responsive adjustments for Mermaid on wider layouts */
 @media (min-width: 770px) {
     .mermaid {
-        width: 95%; /* Slightly narrower than text content */
-        margin-left: 2.5%; /* Slight indentation to match other elements */
-        margin-top: 2rem;
-        margin-bottom: 2rem;
+        width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
     }
 }
 
