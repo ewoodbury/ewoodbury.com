@@ -4,15 +4,15 @@ date: 2026-10-03
 draft: true
 ---
 
-Vectorization is simply the process of running a single instruction over a column of values, typically a few thousand values at a time. It's used by ClickHouse, DuckDB, Numpy, Datafusion, and most others modern fast engines. 
+Vectorization is the technique of running a tight loop over a column of values, typically a few thousand values at a time. It's used by ClickHouse, DuckDB, Numpy, Datafusion, and all modern analytical processing engines. 
 
-This is in contract to how most data processing engines work: relational databases like PostgresDB, and even Apache Spark, all use a row-based execution model. For modern analytical engines thoguh, vectorization has become the standard due to its much better performance with filters, aggregations, and other operations on large columns of data. 
+This contrasts with how most backend data systems work: relational databases (PostgresDB/MySQL), Kafka, and even parts of Apache Spark's execution all use a row-based formats. For analytical use cases though, where filters and aggregations on large columns of data are common, vectorization has become the standard due to its performance advantages.
 
-Contrary to popular belief, vectorization works in any language; it doesn't need a native language like C++ or Rust. In fact, this post builds the entire engine in pure Scala (and we'll use JVM dialect for convenience, but same principles apply in general).
+Vectorization works in any language; it doesn't need a native language like C++ or Rust (a common misconception). In fact, this post builds the entire engine in pure Scala to demonstrate; the principles apply no matter what language is in use.
 
 ---
 
-## Row-based Execution
+## 1. Row-based Engine
 
 Let's start with a basic query operation with a `filter` and `map` stage in Scala: 
 ```scala
@@ -36,13 +36,13 @@ def map[A, B](f: A => B): Stage[A, B] = {
   }
 }
 ```
-So for this query, it walks over all elements and calls the `filter` function for each, allocates memory and creates a new `Partition` data structure for that result, then does the same with the `map` function on each element and allocating a new `Partition` for the result.
+This query walks over all elements and calls the `filter` function on each, allocates memory, and creates a new `Partition` data structure for that result. It then does the same with the `map` function on each element, again allocating a new `Partition` for the result. That's a lot of steps!
 
-Critically, the data is not physically located together, further slowing down processing. Since each int is its own object, the next value is a pointer chase away rather than at the adjacent 4 bytes. A contiguous array of bytes could stream directly from cache to CPU, but that's impossible here.
+For this case, he data is not physically located together in memory. Since each int is its own object, the next value is a pointer chase away rather than at the next 4 bytes. The CPU loads each value into memory, processes it, reads the pointer for the next value, then goes all the way back to memory to fetch it.
 
-The engine may also need to pay the cost type conversions, or "boxing" in the JVM, which is converting from the `java.lang.Integer` to a raw 4-byte int before doing the comparison, then boxing the result after the map from raw int back into `java.lang.Integer`. This is true to some extent for all high-level languages like Scala.
+Another potential slowdown is that of type conversions, or "boxing" as it's known in the JVM. The simple row-based Scala engine converts from the `java.lang.Integer` to a raw 4-byte int before doing the comparison, then boxes the result back into `java.lang.Integer`. This is true (to some extent) for all high-level languages like Scala which manage types.
 
-Due to both one-by-one processing and boxing, processing that 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
+Due to both one-by-one processing and boxing, the row-based engine on the 1 million element list is pretty slow! On my Core i7 machine, this took xx ms in vanilla Scala. The row engine's `collect` of the same query took about 195 ms and allocated about 84 MB, on 4 threads. A million raw ints are 4 MB, so that is about 20× the data.
 
 ```mermaid
 flowchart TD
@@ -65,19 +65,15 @@ flowchart TD
   style mapl fill:#fff3bf,stroke:#e6b800
 ```
 
-## Vectorization
+![Row-Based, 195 ns/integer. Filter + map, 1 million integers.](step-row.png)
+
+## 2. Vectorized Engine
 
 The key principle to understand for vectorization is that of contiguous data. When the engine sets the data to be processed as an entire column (or vector) at once, the next value is always 4 bytes away from the current value.
 
 The column is stored in a contiguous location of memory addresses: in our case the 1 million ints take 4MB of contiguous addresses.
 
-In the engine, that column is an `Array[Int]`, and a loop over any `Array` will get handled by the JVM compiler HotSpot's auto-vectorizer. Auto-vectorization is on by default with the optimizer Superword Level Parallelism (SLCP), but it can be enabled or disabled as compiler flags:
-```
-java -XX:+UseSuperWord ...    # on, default
-java -XX:-UseSuperWord ...    # off, scalar
-```
-
-Therefore to enable vectorization, a Scala data processing engine should simply "get out of the way", and express the operation with vanilla data structures to let the compiler do the vectorization. 
+In the engine, that column is an `Array[Int]`, and the kernels are plain `while` loops over it. Each step handles one int. No SIMD instruction is required, and the filter stays one int wide even when HotSpot's auto-vectorizer is on. This is the unfused columnar engine the earlier Scarlet timings measured: two passes, one value at a time. 
 
 ```scala
 def filterInt32(in: Array[Int]): (Array[Int], Int) = {
@@ -142,7 +138,9 @@ flowchart TD
   style proj fill:#fff3bf,stroke:#e6b800
 ```
 
-## Fused Operations
+![Row-Based 195 ns/integer, Vectorized 11.8 ns/integer.](step-column.png)
+
+## 3. Vectorized Engine with Fusing
 
 In the previous example, the engine executes two CPU instructions on each element, so each value leaves the CPU in between the oerations. The data gets pulled from memory to L3 to L1 to CPU for the first filter, only to be pushed back to L3 then L1 then CPU again for the mutiply. With data movement being the bottleneck, the overall query is limited by moving values between cache levels up to 2 million times, for only 1 million values.
 
@@ -179,15 +177,22 @@ flowchart TD
   style kern fill:#fff3bf,stroke:#e6b800
 ```
 
-## SIMD
+![Row-Based 195 ns/integer, Vectorized 11.8, Vectorized + Fused 8.9.](step-fused.png)
 
-You might have immediately thought about SIMD (Single Instruction Multiple Data), which is the more well-known form of vectorized optimizations. However we leave this until the end, to illustrate the significant gains from more simple vectorization, at the planning and compiler levels first. SIMD lives one level even deeper, within the CPU instructions themselves. 
+## 4. SIMD
+
+You might have immediately thought about SIMD (Single Instruction Multiple Data), which is the more well-known form of vectorized optimizations. However we leave this until the end, to illustrate the significant gains from the simpler column loop, and from fusion, first. SIMD lives one level even deeper, within the CPU instructions themselves. 
 
 The core idea here is exactly as it sounds: a single CPU instruction literally running over multiple values in a single cycle. In this example, the operation `out[i] = in[i] * 2` becomes a single AVX2 instruction operating on 8 ints (32 bytes) at once. All 8 ints are loaded into adjacent lanes as a contiguous block, the CPU executes the bit shift operation for the multiply across all ints, then all 8 int results are stored in oine operation.
 
-For Scala in fact, a plan `while` loop over an `Array[Int]` is not only vectorized, it's also set to automatically using SIMD on modern JVM compilers such as HotSpot.
+For a dense `out(i) = in(i) * 2`, a plain `while` over an `Array[Int]` is not only vectorized, it is also set to automatically use SIMD on modern JVM compilers such as HotSpot. That pass is SuperWord Level Parallelism, on by default, and it can be enabled or disabled as compiler flags:
 
-Scala also enables calling for SIMD explicitly, using `jdk.incubator.vector`. Here `SPECIES_256` represents 8 ints (256 bits) processed in parallel across lanes:
+```
+java -XX:+UseSuperWord ...    # on, default
+java -XX:-UseSuperWord ...    # off, scalar
+```
+
+The filter and fused loops above stay one int per step with the flag either way. The multiply is the loop that changes. A Scala engine can also skip the auto-vectorizer and call the instruction explicitly, using `jdk.incubator.vector`. Here `SPECIES_256` represents 8 ints (256 bits) processed in parallel across lanes:
 
 ```scala
 import jdk.incubator.vector.{IntVector, VectorOperators}
@@ -220,79 +225,12 @@ flowchart TD
   style kern fill:#fff3bf,stroke:#e6b800
 ```
 
+![Map only, 8 million integers. Scalar 0.657 ns/integer, SIMD 0.585 ns/integer.](step-simd.png)
+
 ## On Languages
 
 We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. 
 
-Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop. Of course, we saw that the JVM provides auto-vectorization and other optimizations during the compile step itself, which is in contrast to interpreted languages like Python which are stuck with executing operations as specified (although this is starting to change with the in-progress [Python JIT](https://peps.python.org/pep-0836/)).c1
+Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop. Of course, we saw that the JVM provides auto-vectorization and other optimizations during the compile step itself, which is in contrast to interpreted languages like Python which are stuck with executing operations as specified (although this is starting to change with the in-progress [Python JIT](https://peps.python.org/pep-0836/)).
 
 Still, low-level languages like C++ and Rust provide more direct memory control, specifically in being able to avoid the boxing and unboxing conversion cost of values, whereas JVM languages pay the boxing tax at the beginning and end of the operation when converting raw bytes. They can also specify the exact instruction: for the filter step, a C++/Rust could the AVX-512 compress on a CPU that has it, instead of leaving that choice to the JIT compiler.
-
-
-Notes 
-
-2026-10-03, `opt/physical-fusion` `a467193`. i7-8550U, powersave. 1e6 about 2.3 GHz median. 1e7 about 1.8 GHz median. One thread unless noted. Checksums `500354792612` and `4994678901194`.
-
-![Kernel time, one thread. Unfused, fused, and the sum loop at 1e6 and 1e7 rows.](kernel-time.png)
-
-### 1,000,000 rows
-
-Median milliseconds. Min and p90 in parentheses. Allocation is the mean.
-
-| | Unfused | Fused |
-| --- | --- | --- |
-| Filter `v > 0`, project `* 2` | 11.8 (8.4–18.1), 8.1 MB | 8.9 (8.9–8.9), 4.1 MB |
-| Four `+ 1` projects | 12.0 (12.0–12.3), 16.0 MB | 4.7 (4.3–7.0), 4.0 MB |
-| Sum loop | | 5.3 (5.2–7.3) |
-
-October 2, about 2.0 GHz median: unfused filter-project 11.6 ms, sum loop 6.4 ms. Four projects on the earlier kernel log: 15.5 ms, 16 MB. One project on that log: 4.0 ms, 4 MB.
-
-![Kernel allocation, one thread. Unfused, fused, and the sum loop at 1e6 and 1e7 rows.](kernel-memory.png)
-
-### 10,000,000 rows
-
-| | Unfused | Fused |
-| --- | --- | --- |
-| Filter, project | 148 (130–402), 81 MB | 118 (113–125), 41 MB |
-| Four projects | 288 (217–377), 160 MB | 92 (89–99), 40 MB |
-| Sum loop | | 71 (67–74) |
-
-October 2: unfused filter-project 110 ms, sum loop 54 ms.
-
-![collect versus the fused kernel and the sum loop at 1e6 rows](collect-vs-kernel.png)
-
-### collect
-
-`filter(_ > 0).map(_ * 2)`.
-
-| | October 2 | 2026-10-03 |
-| --- | ---: | ---: |
-| 1 thread | 78 ms | 82 ms, 45 MB |
-| 4 threads | 76 ms | 72 ms |
-
-The tables above are the earlier fusion draft, `a467193`, a different clock. The sitting below is `a8f09a2` on the evening of 2026-10-03. Full grid, min, p90, and the clocks are in `notes/sparklet/vectorization-sitting-2026-10-03.md`.
-
-## This sitting
-
-Filter `v > 0`, then `* 2`, 4 threads. Scarlet row and Scarlet columnar are `collect()`. DuckDB is `CREATE TABLE`. Spark is `collect()` onto the driver. Median milliseconds. The 1M columnar sample sat at 1.10 GHz and the 1M DuckDB sample at 0.90 GHz. At 10M, Scarlet was about 2.15 GHz and DuckDB about 2.00 GHz.
-
-![Returning the filtered ints, 4 threads. Scarlet row, Scarlet columnar, DuckDB, and Spark collect. Log scale.](int-filter-rows.png)
-
-| | Scarlet row | Scarlet columnar | DuckDB | Spark collect |
-| --- | ---: | ---: | ---: | ---: |
-| 1M ints | 156 ms, 84 MB | 84 ms, 41 MB | 10 ms | 4804 ms |
-| 10M ints | 2851 ms, 835 MB | 1366 ms, 407 MB | 89 ms | 39985 ms |
-
-The same 10M int filter as a sum, 4 threads: DuckDB 22 ms, Spark 163 ms. The one-thread fused Scarlet kernel was 101 ms. The handwritten loop was 56 ms.
-
-![One thread, 10M rows, filter then project. Unfused, fused, and the handwritten loop.](kernels-10m.png)
-
-Distinct strings, 1M rows, same filter shape, 4 threads. The row collect is faster than the columnar collect.
-
-![Distinct strings, 1M rows, 4 threads. Log scale.](distinct-strings.png)
-
-| | Scarlet row | Scarlet columnar | DuckDB | Spark collect |
-| --- | ---: | ---: | ---: | ---: |
-| Distinct, 1M | 221 ms, 100 MB | 522 ms, 168 MB | 95 ms | 4698 ms |
-
-A full Spark collect of 10M strings was OOM-killed. The 1,024-group filter collect at 1 thread did finish: 40.1 s. The other 10M string collects returned lengths only.
