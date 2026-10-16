@@ -2,6 +2,7 @@
 title: "Vectorized data processing from first principles"
 date: 2026-10-12
 draft: false
+url: "/vectorized/"
 headerImage: "header.png"
 headerAlt: "Filter and map on 1 million integers. Row-based, vectorized, and vectorized plus fused, in nanoseconds per integer."
 ---
