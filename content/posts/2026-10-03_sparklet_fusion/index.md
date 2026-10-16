@@ -50,17 +50,17 @@ Due to both one-by-one processing and boxing, the row-based engine on the 1 mill
 ```mermaid
 flowchart TD
   subgraph filt["Filter loop, x 1,000,000"]
-    f1["chase the next pointer"] --> f2["unbox the Integer"]
+    f1["Chase next pointer"] --> f2["Unbox the Int"]
     f2 --> f3{"> 0?"}
     f3 -->|no| f1
-    f3 -->|yes| f4["allocate a cons cell"]
+    f3 -->|yes| f4["Allocate list node"]
     f4 --> f1
   end
-  mid1["a new list, in memory"]
+  mid1["New list, in memory"]
   subgraph mapl["Map loop, x 500,000"]
-    m1["chase the next pointer"] --> m2["unbox"]
-    m2 --> m3["multiply by 2"]
-    m3 --> m4["allocate an Integer and a cons cell"]
+    m1["Chase next pointer"] --> m2["Unbox the Int"]
+    m2 --> m3["Multiply by 2"]
+    m3 --> m4["Allocate new Int and list node"]
     m4 --> m1
   end
   filt --> mid1 --> mapl
@@ -121,15 +121,15 @@ In the 1-million int example, the data to process is always ready in L3 or L1 ca
 ```mermaid
 flowchart TD
   subgraph filt["Filter loop, x 1,000,000"]
-    f1["load in(i), 4 bytes ahead"] --> f2{"> 0?"}
+    f1["Load next int"] --> f2{"> 0?"}
     f2 -->|no| f1
-    f2 -->|yes| f3["store out(written)"]
+    f2 -->|yes| f3["Store survivor"]
     f3 --> f1
   end
-  mid["intermediate column, in memory"]
+  mid["Column, in memory"]
   subgraph proj["Map loop, x 500,000"]
-    p1["load filtered(j)"] --> p2["multiply by 2"]
-    p2 --> p3["store projected(j)"]
+    p1["Load filtered int"] --> p2["Multiply by 2"]
+    p2 --> p3["Store result"]
     p3 --> p1
   end
   filt --> mid --> proj
@@ -167,10 +167,10 @@ Note that fusing is separate from vectorization, and it's been a common operatio
 ```mermaid
 flowchart TD
   subgraph kern["One loop, x 1,000,000"]
-    a["load in(i) into a register"] --> b{"> 0?"}
+    a["Load int into register"] --> b{"> 0?"}
     b -->|no| a
-    b -->|yes| c["multiply by 2, same register"]
-    c --> d["one store"]
+    b -->|yes| c["Multiply by 2"]
+    c --> d["Store once"]
     d --> a
   end
   style kern fill:#fff3bf,stroke:#e6b800
@@ -215,8 +215,8 @@ The 8th-gen i7 used for testing doesn't support the newer instruction set (AVX-5
 ```mermaid
 flowchart TD
   subgraph kern["Dense multiply, x 125,000"]
-    a["load 8 ints, 32 bytes"] --> b["one instruction shifts all 8"]
-    b --> c["store 8 ints"]
+    a["Load 8 ints"] --> b["Shift all 8"]
+    b --> c["Store 8 ints"]
     c --> a
   end
   style kern fill:#fff3bf,stroke:#e6b800
