@@ -30,6 +30,15 @@ name = "About"
 url = "/about"
 weight = 1
 
+[outputs]
+  home = ["HTML", "RSS", "ogcards"]
+
+[outputFormats.ogcards]
+  mediaType = "application/json"
+  baseName = "og-cards"
+  isPlainText = true
+  notAlternative = true
+
 [markup.goldmark.renderer]
   # Allow HTML in Markdown (enables <details> tags and other HTML elements)
   unsafe = true

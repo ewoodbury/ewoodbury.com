@@ -56,6 +56,13 @@ jobs:
           hugo \
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/"
+      - name: Render social cards
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          wget -q -O "${{ runner.temp }}/chrome.deb" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y "${{ runner.temp }}/chrome.deb"
+          python3 scripts/render-og-cards.py public
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

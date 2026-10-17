@@ -1,0 +1,17 @@
+{{- $cards := slice -}}
+{{- range where site.RegularPages "Section" "in" site.MainSections -}}
+    {{- $page := . -}}
+    {{- $header := "" -}}
+    {{- with .Params.headerImage -}}
+        {{- if $page.Resources.GetMatch . -}}
+            {{- $header = printf "content/%s%s" $page.File.Dir . -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $cards = $cards | append (dict
+        "out" (strings.TrimPrefix "/" (printf "%scard.png" $page.RelPermalink))
+        "title" $page.Title
+        "minutes" $page.ReadingTime
+        "header" $header
+    ) -}}
+{{- end -}}
+{{- $cards | jsonify (dict "indent" "  ") -}}
