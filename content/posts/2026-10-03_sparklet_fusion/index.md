@@ -1,8 +1,8 @@
 ---
-title: "Vectorized data processing from first principles"
+title: "Vectorized data processing, explained"
 date: 2026-10-12
 draft: false
-url: "/vectorized/"
+url: "/vectorized-data/"
 headerImage: "header.png"
 headerAlt: "Filter and map on 1 million integers. Row-based, vectorized, and vectorized plus fused, in nanoseconds per integer."
 ---
@@ -226,7 +226,7 @@ flowchart TD
 
 ## On Languages
 
-We wrote our examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. 
+I wrote these examples here in Scala, rather than a lower-level language, to illustrate the point that vectorization itself is language agnostic. In fact, my entire for-fun processing engine project, [Scarlet](https://github.com/ewoodbury/scarlet), is in Scala yet still beats Apache Spark easily thanks in large part due to vectorization. 
 
 Language choice has no effect once code is compiled down to the equivalent instructions within the processing loop. Of course, we saw that the JVM provides auto-vectorization and other optimizations during the compile step itself, which is in contrast to interpreted languages like Python which are stuck with executing operations as specified (although this is starting to change with the in-progress [Python JIT](https://peps.python.org/pep-0836/)).
 
