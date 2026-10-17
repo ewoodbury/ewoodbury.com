@@ -49,7 +49,7 @@ html, body {
 .title {
   color: #141414;
   font-weight: 650;
-  font-size: 50px;
+  font-size: 52px;
   line-height: 1.08;
   letter-spacing: -0.032em;
   font-variation-settings: "opsz" 32, "wght" 650;
@@ -61,7 +61,7 @@ html, body {
   margin-top: 18px;
   color: #6b7280;
   font-weight: 450;
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
   letter-spacing: -0.012em;
   font-variation-settings: "opsz" 16, "wght" 450;
@@ -88,7 +88,7 @@ html, body {
 }
 .card.solo { padding-left: 80px; }
 .card.solo .copy { flex: none; width: 980px; }
-.card.solo .title { font-size: 60px; }
+.card.solo .title { font-size: 62px; }
 """
 
 
