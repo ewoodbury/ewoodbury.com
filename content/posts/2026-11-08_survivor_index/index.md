@@ -65,17 +65,17 @@ This approach is straightforward and trivially correct. However the additional m
 Instead of allocating a buffer the size of the whole dataset and copying the entire survivor dataset, it can instead decide to track only row numbers of the survivor records. 
 ```
 For a dataset of [employee, salary] pairs:
-(["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000])
+(["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
 
 Filtered to employees with salary > 100000, saving only survivor indexes
-(1, 2, null, null)
+(1, 2, null, null, null)
 ```
 
 In this case, the engine only allocates space for 4 `int32`s, or 16 bytes total. The large name string does not have an impact on memory usage. 
 
 Subsequent filters can operate directly on the indexes as well, using the index as a lookup.
 ```
-Original Dataset: (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000])
+Original Dataset: (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
 Current survivors: (1, 2, null, null)
 
 Filtered to employees with names starting with 'A':
