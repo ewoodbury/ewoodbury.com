@@ -34,8 +34,26 @@ Filtered to employees with names starting with 'A':
 
 The naive query engine implemenation is as follows:
 ```scala
-code
-````
+def filter(
+    keys: Array[Int],
+    values: Array[Int],
+    keep: (Int, Int) => Boolean,
+): (Array[Int], Array[Int], Int) = {
+  val outKeys = new Array[Int](keys.length)
+  val outValues = new Array[Int](values.length)
+  var written = 0
+  var row = 0
+  while (row < keys.length) {
+    if (keep(keys(row), values(row))) {
+      outKeys(written) = keys(row)
+      outValues(written) = values(row)
+      written += 1
+    }
+    row += 1
+  }
+  (outKeys, outValues, written)
+}
+```
 
 This approach is straightforward and trivially correct. However the additional memory required and scans leave room for improvement. 
 
@@ -64,8 +82,44 @@ A tradeoff on this subsequent filter is the extra time spent to do the record lo
 
 The optimized query engine with survivor indices is:
 ```scala
-code
-````
+def select(
+    keys: Array[Int],
+    values: Array[Int],
+    keep: (Int, Int) => Boolean,
+): (Array[Int], Int) = {
+  val index = new Array[Int](keys.length)
+  var written = 0
+  var row = 0
+  while (row < keys.length) {
+    if (keep(keys(row), values(row))) {
+      index(written) = row
+      written += 1
+    }
+    row += 1
+  }
+  (index, written)
+}
+
+def select(
+    index: Array[Int],
+    written: Int,
+    keys: Array[Int],
+    values: Array[Int],
+    keep: (Int, Int) => Boolean,
+): Int = {
+  var output = 0
+  var slot = 0
+  while (slot < written) {
+    val row = index(slot)
+    if (keep(keys(row), values(row))) {
+      index(output) = row
+      output += 1
+    }
+    slot += 1
+  }
+  output
+}
+```
 
 
 ## Count and sum
@@ -101,7 +155,27 @@ Return: total = 260000
 ```
 
 Optimized query engine:
-...
+```scala
+def sum(index: Array[Int], written: Int, values: Array[Int]): Long = {
+  var total = 0L
+  var slot = 0
+  while (slot < written) {
+    total += values(index(slot))
+    slot += 1
+  }
+  total
+}
+
+def sum(values: Array[Int], keep: Int => Boolean): Long = {
+  var total = 0L
+  var row = 0
+  while (row < values.length) {
+    if (keep(values(row))) total += values(row)
+    row += 1
+  }
+  total
+}
+```
 
 ## Results
 
@@ -110,4 +184,6 @@ Optimized query engine:
 
 Query engines are a neat way to see data structures and algorithm principles applied in real life. These optimizations are elementary, but they're illustrative of the thousands of techniques that make up the database engines that run the world.
 
-A related and slightly more advanced technique is operator fusing, which involves automatically optimizing chained filters into a single operation. Similarly x, y, and z are other optimizations that improve execution on simple queries like this. I may cover these in a future post!
+Related and slighly more advanced techniques include operator fusing, column pruning, sorts by index, and zero-copy groupbys. I may cover these in a future post!
+
+This is one of many optimizations built into my custom query engine scarlet, built from scratch with vectorization in Scala 3. Feel free to follow along for more writings and query engine progress.
