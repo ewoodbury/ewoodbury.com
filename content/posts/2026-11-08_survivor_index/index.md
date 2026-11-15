@@ -18,10 +18,10 @@ For a dataset of [employee, salary] pairs:
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
 
 Engine allocates new destination in memory: 
-(<blank>, <blank>, <blank>, <blank>, <blank>)
+(null, null, null, null, null)
 
 Then fills it with surviving data:
-(["Sally", 120000], ["Allen", 140000], <blank>, <blank>, <blank>)
+(["Sally", 120000], ["Allen", 140000], null, null, null)
 ```
 
 To do the memory allocation, the program doesn't know how many records will survive, so it allocates the new buffer as the same size as the entire input dataset in case all records pass the filter. Memory usage is doubled during the operation until the original data can be freed.
@@ -32,7 +32,7 @@ val highEarnersA = salaries.filter(_.salary > 100000).filter(_.name.startsWith("
 ```
 ```
 Filtered to employees with names starting with 'A':
-(["Allen", 140000], <blank>)
+(["Allen", 140000], null)
 ```
 
 This naive engine kernel is as follows:
@@ -68,7 +68,7 @@ For a dataset of [employee, salary] pairs:
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000])
 
 Filtered to employees with salary > 100000, saving only survivor indexes
-(1, 2, <blank>, <blank>)
+(1, 2, null, null)
 ```
 
 In this case, the engine only allocates space for 4 `int32`s, or 16 bytes total. The large name string does not have an impact on memory usage. 
@@ -76,12 +76,12 @@ In this case, the engine only allocates space for 4 `int32`s, or 16 bytes total.
 Subsequent filters can operate directly on the indexes as well, using the index as a lookup.
 ```
 Original Dataset: (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000])
-Current survivors: (1, 2, <blank>, <blank>)
+Current survivors: (1, 2, null, null)
 
 Filtered to employees with names starting with 'A':
-(2, <blank>)
+(2, null)
 ```
-A tradeoff on this subsequent filter is the extra time spent to do the record lookups based on the indexes. The program needs to fetch the full record from the original array in memory for records 1 and 2 to do the name filter.
+A downside is the extra time spent to do the record lookups, since the name strings only exist in the original array. The program needs to fetch the full record from the original to do the name filter, which leads to extra idle CPU cycles due to fetching from a different location in cache or memory.
 
 The optimized engine kernel with survivor indices is:
 ```scala
@@ -102,26 +102,6 @@ def select(
   }
   (index, written)
 }
-
-def select(
-    index: Array[Int],
-    written: Int,
-    keys: Array[Int],
-    values: Array[Int],
-    keep: (Int, Int) => Boolean,
-): Int = {
-  var output = 0
-  var slot = 0
-  while (slot < written) {
-    val row = index(slot)
-    if (keep(keys(row), values(row))) {
-      index(output) = row
-      output += 1
-    }
-    slot += 1
-  }
-  output
-}
 ```
 
 
@@ -129,7 +109,7 @@ def select(
 
 Now consider the following sum operation:
 ```scala
-salaries.filter(_ > 100000).sum()
+salaries.filter(_.salary > 100000).map(_.salary).sum
 ```
 
 Following these optimizations, an engine could save the survivor indices only throughout the computation, then do fast array lookups at the end to aggregate the total. This beats the naive approach of allocating an entire new array of the same original size.
@@ -138,7 +118,7 @@ Following these optimizations, an engine could save the survivor indices only th
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
 
 Filter salary > 100000, survivor indices
-(1, 2, <blank>, <blank>, <blank>)
+(1, 2, null, null, null)
 
 Calculate final sum:
 salary[1] + salary[2] = 120000 + 140000 = 260000
@@ -182,7 +162,11 @@ def sum(values: Array[Int], keep: Int => Boolean): Long = {
 
 ## Results
 
-The kernels above, on 1,000,000 integer pairs. The first filter keeps positive values. The second keeps keys that are not a multiple of 3. 333,062 rows survive both.
+Results for 1,000,000 integer pairs through 2 filters and a sum, for each of the three kernels. For this example, the first filter keeps positive values and the second filter keeps non-multiples of 3, leaving 333,062 rows which survive both.
+
+```scala
+values.filter(_._2 > 0).filter(_._1 % 3 != 0).map(_._2).sum
+```
 
 ![Megabytes allocated. Copy 12.0, index 4.0, single scan 0.](results-memory.png)
 
