@@ -1,7 +1,10 @@
 ---
 title: "Faster data processing with zero-copy filters"
-date: 2026-11-08
+date: 2026-11-15
 draft: true
+url: "/zero-copy/"
+headerImage: "header.png"
+headerAlt: "Two filters then a sum on 1 million pairs. Copying allocates 12 megabytes and takes 11.9 milliseconds. The row-number index allocates 4 megabytes and takes 11.0 milliseconds. The single scan allocates nothing and takes 6.7 milliseconds."
 ---
 
 Consider a simple filter operation passed to a data processing engine:
@@ -9,7 +12,7 @@ Consider a simple filter operation passed to a data processing engine:
 val highEarners = salaries.filter(_.salary > 100000).collect()
 ```
 
-A simple query engine executes this by first allocating a new location in memory for the result data. Then it pulls the the original data from memory into the caches and then CPU, evaluates the filter, then copies only passing records into the allocated destination in memory.
+A simple query engine executes this by first allocating a new location in memory for the result data. Then it pulls the original data from memory into the caches and then CPU, evaluates the filter, then copies only passing records into the allocated destination in memory.
 ```
 For a dataset of [employee, salary] pairs:
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
@@ -23,9 +26,9 @@ Then fills it with surviving data:
 
 To do the memory allocation, the program doesn't know how many records will survive, so it allocates the new buffer as the same size as the entire input dataset in case all records pass the filter. Memory usage is doubled during the operation until the original data can be freed.
 
-What about ano? Or even more? Same idea - program needs to allocate a buffer in memory for every new filter result, and copy data into it after each operation. For the subsequent query:
+What about two filters? Or even more? Same idea - program needs to allocate a buffer in memory for every new filter result, and copy data into it after each operation. For the subsequent query:
 ```scala
-val highEarnersA = salaries.filter(_.salary > 100000).filter(_.name[0] == "A")
+val highEarnersA = salaries.filter(_.salary > 100000).filter(_.name.startsWith("A"))
 ```
 ```
 Filtered to employees with names starting with 'A':
@@ -64,7 +67,7 @@ Instead of allocating a buffer the size of the whole dataset and copying the ent
 For a dataset of [employee, salary] pairs:
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000])
 
-Filtered to employees with salary > 100000, saving only surivor indexes
+Filtered to employees with salary > 100000, saving only survivor indexes
 (1, 2, <blank>, <blank>)
 ```
 
@@ -149,7 +152,7 @@ The engine can instead aggregate as it goes, so it only needs to allocate space 
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
      |               |                  |                  |                 |
 Scan:|               |                  |                  |                 |
-  skip...         total=120000...    total=160000...     skip...          skip...
+  skip...         total=120000...    total=260000...     skip...          skip...
 
 Return: total = 260000
 ```
@@ -183,18 +186,18 @@ The kernels above, on 1,000,000 integer pairs. The first filter keeps positive v
 
 ![Megabytes allocated. Copy 12.0, index 4.0, single scan 0.](results-memory.png)
 
-As expected, removing the full size allocation significantly reduces memory from the copy kernel to the survivor index kernel. Of course the zero-copy scan-only kernel is best with no additional memory copied. (Note the 8MB of the original souce 1 million int pairs is not included in these totals, since it's the same for all.)
+As expected, removing the full size allocation significantly reduces memory from the copy kernel to the survivor index kernel. Of course the zero-copy scan-only kernel is best with no additional memory copied. (Note the 8MB of the original source 1 million int pairs is not included in these totals, since it's the same for all.)
 
 ![Milliseconds. Copy 11.9, index 11.0, single scan 6.7.](results-time.png)
 
 The survivor index kernel still writes a row number for every survivor and reads it back, so wall time is only slightly improved from the naive copy kernel. The scan adds the value while the row is already in hand.
 
-(All results from a i7-8550U, single thread, at about 2.3 GHz. Results are the median of 9 runs after 5 warmup runs.)
+(All results from an i7-8550U, single thread, at about 2.3 GHz. Results are the median of 9 runs after 5 warmup runs.)
 
 ## Wrap-up
 
 Query engines are a neat way to see data structures and algorithm principles applied in real life. These optimizations are elementary, but they're illustrative of the thousands of techniques that make up the database engines that run the world.
 
-Related and slighly more advanced techniques include operator fusing, column pruning, sorts by index, and zero-copy groupbys. I may cover these in a future post!
+Related and slightly more advanced techniques include operator fusing, column pruning, sorts by index, and zero-copy groupbys. I may cover these in a future post!
 
 This is one of many optimizations built into my custom query engine scarlet, built from scratch with vectorization in Scala 3. Feel free to follow along for more writings and query engine progress.
