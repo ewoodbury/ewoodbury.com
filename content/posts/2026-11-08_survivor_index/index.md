@@ -1,7 +1,7 @@
 ---
 title: "Faster data processing with zero-copy filters"
 date: 2026-11-15
-draft: true
+draft: false
 url: "/zero-copy/"
 headerImage: "header.png"
 headerAlt: "Two filters then a sum on 1 million pairs. Copying allocates 12 megabytes and takes 11.9 milliseconds. The row-number index allocates 4 megabytes and takes 11.0 milliseconds. The single scan allocates nothing and takes 6.7 milliseconds."
