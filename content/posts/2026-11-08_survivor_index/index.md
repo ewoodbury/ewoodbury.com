@@ -5,7 +5,7 @@ draft: true
 ---
 
 Consider a simple filter operation passed to a data processing engine:
-```
+```scala
 val highEarners = salaries.filter(_.salary > 100000).collect()
 ```
 
@@ -32,7 +32,7 @@ Filtered to employees with names starting with 'A':
 (["Allen", 140000], <blank>)
 ```
 
-The naive query engine implemenation is as follows:
+This naive engine kernel is as follows:
 ```scala
 def filter(
     keys: Array[Int],
@@ -80,7 +80,7 @@ Filtered to employees with names starting with 'A':
 ```
 A tradeoff on this subsequent filter is the extra time spent to do the record lookups based on the indexes. The program needs to fetch the full record from the original array in memory for records 1 and 2 to do the name filter.
 
-The optimized query engine with survivor indices is:
+The optimized engine kernel with survivor indices is:
 ```scala
 def select(
     keys: Array[Int],
@@ -125,7 +125,7 @@ def select(
 ## Count and sum
 
 Now consider the following sum operation:
-```
+```scala
 salaries.filter(_ > 100000).sum()
 ```
 
@@ -147,14 +147,14 @@ The engine can instead aggregate as it goes, so it only needs to allocate space 
 
 ```
 (["Joe", 85000], ["Sally", 120000], ["Allen", 140000], ["Linda", 95000], ["Tony", 80000])
-
-Single scan, aggregating total as we go:
+     |               |                  |                  |                 |
+Scan:|               |                  |                  |                 |
   skip...         total=120000...    total=160000...     skip...          skip...
 
 Return: total = 260000
 ```
 
-Optimized query engine:
+Optimized engine kernel:
 ```scala
 def sum(index: Array[Int], written: Int, values: Array[Int]): Long = {
   var total = 0L
@@ -179,6 +179,17 @@ def sum(values: Array[Int], keep: Int => Boolean): Long = {
 
 ## Results
 
+The kernels above, on 1,000,000 integer pairs. The first filter keeps positive values. The second keeps keys that are not a multiple of 3. 333,062 rows survive both.
+
+![Megabytes allocated. Copy 12.0, index 4.0, single scan 0.](results-memory.png)
+
+As expected, removing the full size allocation significantly reduces memory from the copy kernel to the survivor index kernel. Of course the zero-copy scan-only kernel is best with no additional memory copied. (Note the 8MB of the original souce 1 million int pairs is not included in these totals, since it's the same for all.)
+
+![Milliseconds. Copy 11.9, index 11.0, single scan 6.7.](results-time.png)
+
+The survivor index kernel still writes a row number for every survivor and reads it back, so wall time is only slightly improved from the naive copy kernel. The scan adds the value while the row is already in hand.
+
+(All results from a i7-8550U, single thread, at about 2.3 GHz. Results are the median of 9 runs after 5 warmup runs.)
 
 ## Wrap-up
 
